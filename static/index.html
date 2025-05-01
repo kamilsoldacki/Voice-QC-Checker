@@ -1,61 +1,150 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Voice QC Checker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
-    label, select, input, button { display: block; margin: 10px 0; }
-    .result { margin: 20px 0; border-top: 1px solid #ccc; padding-top: 10px; }
-    .sample { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; }
-    audio { width: 300px; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #fff;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header img {
+      height: 28px;
+    }
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 0.5rem;
+    }
+    p.description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 2rem;
+    }
+    label, select, input, button {
+      display: block;
+      margin: 12px 0;
+      font-size: 14px;
+      width: 100%;
+    }
+    input, select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #222;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #444;
+    }
+    .sample {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: #f3f3f3;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sample strong {
+      margin-bottom: 0.3rem;
+    }
+    audio {
+      margin-top: 10px;
+      width: 100%;
+    }
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+      margin: 2rem 0;
+    }
   </style>
 </head>
 <body>
-  <h1>Voice QC Checker</h1>
-  <label for="voiceId">Voice ID:</label>
-  <input type="text" id="voiceId" placeholder="Enter voice ID" />
+  <header>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <img src="https://cdn.elevenlabs.io/logo/black-text-logo.svg" alt="ElevenLabs logo">
+      <span style="font-weight: 600; font-size: 16px;">Voice QC Checker</span>
+    </div>
+  </header>
+  <main>
+    <h1>Voice QC Checker</h1>
+    <p class="description">Quickly evaluate plosives, sibilants and additional audio characteristics for any ElevenLabs voice.</p>
+    <label for="voiceId">Voice ID:</label>
+    <input type="text" id="voiceId" placeholder="Enter voice ID" />
 
-  <label for="language">Select Language:</label>
-  <select id="language">
-    <option>Chinese (Mandarin)</option>
-    <option>English (USA, UK, Australia, Canada)</option>
-    <option>Hindi</option>
-    <option>Spanish (Spain, Mexico)</option>
-    <option>Arabic (Saudi Arabia, UAE)</option>
-    <option>Portuguese (Brazil, Portugal)</option>
-    <option>Russian</option>
-    <option>French (France, Canada)</option>
-    <option>Indonesian</option>
-    <option>Japanese</option>
-    <option>German</option>
-    <option>Filipino</option>
-    <option>Korean</option>
-    <option>Vietnamese</option>
-    <option>Turkish</option>
-    <option>Tamil</option>
-    <option>Italian</option>
-    <option>Ukrainian</option>
-    <option>Polish</option>
-    <option>Dutch</option>
-    <option>Romanian</option>
-    <option>Swedish</option>
-    <option>Hungarian</option>
-    <option>Norwegian</option>
-    <option>Danish</option>
-    <option>Slovak</option>
-    <option>Croatian</option>
-    <option>Greek</option>
-    <option>Czech</option>
-    <option>Bulgarian</option>
-    <option>Finnish</option>
-    <option>Malay</option>
-  </select>
+    <label for="language">Select Language:</label>
+    <select id="language">
+      <option>Chinese (Mandarin)</option>
+      <option>English (USA, UK, Australia, Canada)</option>
+      <option>Hindi</option>
+      <option>Spanish (Spain, Mexico)</option>
+      <option>Arabic (Saudi Arabia, UAE)</option>
+      <option>Portuguese (Brazil, Portugal)</option>
+      <option>Russian</option>
+      <option>French (France, Canada)</option>
+      <option>Indonesian</option>
+      <option>Japanese</option>
+      <option>German</option>
+      <option>Filipino</option>
+      <option>Korean</option>
+      <option>Vietnamese</option>
+      <option>Turkish</option>
+      <option>Tamil</option>
+      <option>Italian</option>
+      <option>Ukrainian</option>
+      <option>Polish</option>
+      <option>Dutch</option>
+      <option>Romanian</option>
+      <option>Swedish</option>
+      <option>Hungarian</option>
+      <option>Norwegian</option>
+      <option>Danish</option>
+      <option>Slovak</option>
+      <option>Croatian</option>
+      <option>Greek</option>
+      <option>Czech</option>
+      <option>Bulgarian</option>
+      <option>Finnish</option>
+      <option>Malay</option>
+    </select>
 
-  <button onclick="generateSamples()">Generate</button>
+    <button onclick="generateSamples()">Generate</button>
 
-  <div class="result" id="results"></div>
+    <div id="results"></div>
+  </main>
+  <footer>
+    Built with ❤️ by ElevenLabs · <a href="https://elevenlabs.io" target="_blank">elevenlabs.io</a>
+  </footer>
 
   <script>
     async function generateSamples() {
@@ -81,7 +170,8 @@
         const div = document.createElement("div");
         div.className = "sample";
         div.innerHTML = `
-          <div><strong>${type.toUpperCase()}:</strong><br><span>${text}</span></div>
+          <strong>${type.toUpperCase()}:</strong>
+          <div>${text}</div>
           <audio controls src="data:audio/mpeg;base64,${sample}"></audio>
         `;
         resultsDiv.appendChild(div);
