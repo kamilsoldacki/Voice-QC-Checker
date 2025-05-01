@@ -17,14 +17,16 @@
       padding: 2rem;
     }
 
+    .container {
+      width: 100%;
+      max-width: 600px;
+    }
+
     header {
       width: 100%;
-      max-width: 1200px;
-      display: flex;
-      align-items: center;
-      padding: 1rem 2rem;
       font-weight: bold;
       font-size: 1.2rem;
+      padding-bottom: 0.5rem;
     }
 
     .card {
@@ -32,9 +34,8 @@
       padding: 2rem;
       border-radius: 16px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-      max-width: 600px;
       width: 100%;
-      margin-top: 2rem;
+      margin-top: 1rem;
     }
 
     .card h1 {
@@ -85,37 +86,48 @@
       cursor: pointer;
     }
 
-    footer {
+    .loading {
+      text-align: center;
+      font-size: 0.95rem;
+      color: #666;
       margin-top: 2rem;
-      font-size: 0.8rem;
-      color: #777;
     }
 
     .results {
       margin-top: 2rem;
       width: 100%;
-      max-width: 600px;
     }
 
     .sample {
       background: white;
       border-radius: 10px;
       padding: 1rem;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
+    }
+
+    .sample h3 {
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: #333;
     }
 
     .sample audio {
       width: 100%;
+      margin-bottom: 0.5rem;
     }
 
     .sample-text {
       font-size: 0.9rem;
       color: #444;
       font-style: italic;
+    }
+
+    footer {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: #777;
     }
 
     @media (max-width: 600px) {
@@ -126,32 +138,33 @@
   </style>
 </head>
 <body>
-  <header>
-    IIElevenLabs
-  </header>
+  <div class="container">
+    <header>IIElevenLabs</header>
 
-  <div class="card">
-    <h1>Voice QC Checker</h1>
-    <p>Quickly evaluate plosives, sibilants, and other key sound characteristics for any ElevenLabs voice.</p>
-    <div class="settings">
-      Model: eleven_multilingual_v2 | Speed: 1.0 | Stability: 0.5 | Similarity: 0.75 | Style: 0.0 | Speaker Boost: ON
+    <div class="card">
+      <h1>Voice QC Checker</h1>
+      <p>Quickly evaluate plosives, sibilants, and other key sound characteristics for any ElevenLabs voice.</p>
+      <div class="settings">
+        Model: eleven_multilingual_v2 | Speed: 1.0 | Stability: 0.5 | Similarity: 0.75 | Style: 0.0 | Speaker Boost: ON
+      </div>
+      <form id="qcForm">
+        <label for="voiceId">Voice ID</label>
+        <input type="text" id="voiceId" name="voiceId" required />
+
+        <label for="language">Select Language</label>
+        <select id="language" name="language" required></select>
+
+        <button type="submit">Generate</button>
+      </form>
+      <div class="loading" id="loading" style="display: none;">Generating audio samples... Please wait.</div>
     </div>
-    <form id="qcForm">
-      <label for="voiceId">Voice ID</label>
-      <input type="text" id="voiceId" name="voiceId" required />
 
-      <label for="language">Select Language</label>
-      <select id="language" name="language" required></select>
+    <div class="results" id="results"></div>
 
-      <button type="submit">Generate</button>
-    </form>
+    <footer>
+      Built with ❤️ for the ElevenLabs team · <a href="https://elevenlabs.io" target="_blank">elevenlabs.io</a>
+    </footer>
   </div>
-
-  <div class="results" id="results"></div>
-
-  <footer>
-    Built with ❤️ for the ElevenLabs team · <a href="https://elevenlabs.io" target="_blank">elevenlabs.io</a>
-  </footer>
 
   <script>
     const languageData = {};
@@ -173,24 +186,37 @@
       e.preventDefault();
       const voiceId = document.getElementById('voiceId').value;
       const language = document.getElementById('language').value;
+      const loading = document.getElementById('loading');
+      const resultsDiv = document.getElementById('results');
+      loading.style.display = 'block';
+      resultsDiv.innerHTML = '';
+
       const response = await fetch('/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ voiceId, language })
       });
       const data = await response.json();
-      const resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = '';
+      loading.style.display = 'none';
+
+      const labels = {
+        plosives: 'PLOSIVES',
+        sibilants: 'SIBILANTS',
+        additional: 'ADDITIONAL SOUNDS'
+      };
 
       ['plosives', 'sibilants', 'additional'].forEach(type => {
         const div = document.createElement('div');
         div.className = 'sample';
+        const label = document.createElement('h3');
+        label.textContent = labels[type];
         const audio = document.createElement('audio');
         audio.controls = true;
         audio.src = data[type].audio_url;
         const text = document.createElement('div');
         text.className = 'sample-text';
         text.textContent = data[type].text;
+        div.appendChild(label);
         div.appendChild(audio);
         div.appendChild(text);
         resultsDiv.appendChild(div);
