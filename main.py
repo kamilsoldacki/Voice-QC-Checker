@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import requests
 import os
@@ -18,8 +17,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
-
 ELEVEN_API_KEY = os.getenv("ELEVEN_API_KEY")
 
 class GenerateRequest(BaseModel):
@@ -29,7 +26,9 @@ class GenerateRequest(BaseModel):
 @app.get("/voice-info/{voice_id}")
 def get_voice_info(voice_id: str):
     url = f"https://api.elevenlabs.io/v1/voices/{voice_id}"
-    headers = {"xi-api-key": ELEVEN_API_KEY}
+    headers = {
+        "xi-api-key": ELEVEN_API_KEY
+    }
     try:
         res = requests.get(url, headers=headers)
         res.raise_for_status()
@@ -72,11 +71,13 @@ def generate_audio(req: GenerateRequest):
                 json=payload,
                 headers=headers
             )
+
             if response.status_code == 200:
-                audio_urls[key] = response.content
+                audio_urls[key] = response.content  # raw audio bytes
             else:
                 audio_urls[key] = None
-        except Exception:
+
+        except Exception as e:
             audio_urls[key] = None
 
     return audio_urls
