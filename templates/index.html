@@ -1,34 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Voice QC Checker</title>
-    <link rel="stylesheet" href="/static/styles.css">
-    <link rel="icon" href="/static/favicon.ico">
+    <style>
+        body { font-family: Arial, sans-serif; background: #fafafa; margin: 0; padding: 20px; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+        .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #888; }
+        input, select, button { width: 100%; padding: 10px; margin-top: 10px; font-size: 1em; }
+        button { background: black; color: white; border: none; cursor: pointer; }
+    </style>
 </head>
 <body>
-    <header>
-        <img src="https://11labs-nonprd-15f22c1d.s3.eu-west-3.amazonaws.com/0b9cd3e1-9fad-4a5b-b3a0-c96b0a1f1d2b/elevenlabs-logo-black.png" alt="ElevenLabs Logo" class="logo">
-    </header>
-    <main>
+    <div class="container">
         <h1>Voice QC Checker</h1>
         <p>Quickly evaluate plosives, sibilants, and other key sound characteristics for any ElevenLabs voice.</p>
-        <p class="info">
-            Model: eleven_multilingual_v2<br>
-            Speed: 1.0 | Stability: 0.5 | Similarity: 0.75 | Style: 0.0<br>
-            Speaker boost: ON | Normalization text: ON
-        </p>
-        <form method="get">
-            <input type="text" name="voice_id" placeholder="Enter Voice ID" required>
-            <select name="language">
-                <option value="en">English</option>
-                <option value="pl">Polish</option>
-            </select>
-            <button type="submit">Generate</button>
-        </form>
-    </main>
-    <footer>
+        <pre>Model: eleven_multilingual_v2
+Speed: 1.0 | Stability: 0.5 | Similarity: 0.75 | Style: 0.0
+Speaker boost: ON | Normalization text: ON</pre>
+        <label>Voice ID</label>
+        <input type="text" id="voice_id" placeholder="Enter Voice ID" />
+        <label>Select Language</label>
+        <select id="language">
+            <option>Polish</option>
+        </select>
+        <button onclick="generate()">Generate</button>
+        <div id="status"></div>
+    </div>
+    <div class="footer">
         Built with ❤️ for the ElevenLabs team · Kamil Soldacki
-    </footer>
+    </div>
+    <script>
+        async function generate() {
+            const voice_id = document.getElementById('voice_id').value;
+            const language = document.getElementById('language').value;
+            document.getElementById('status').innerText = "Generating samples...";
+
+            const res = await fetch('/generate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ voice_id, language })
+            });
+
+            if (res.ok) {
+                document.getElementById('status').innerText = "Done!";
+            } else {
+                document.getElementById('status').innerText = "Error generating samples.";
+            }
+        }
+    </script>
 </body>
 </html>
