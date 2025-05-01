@@ -1,11 +1,11 @@
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import requests
 import os
 from dotenv import load_dotenv
-from text_data import test_sentences
+from text_data import TEST_TEXTS
 
 load_dotenv()
 
@@ -18,6 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
 ELEVEN_API_KEY = os.getenv("ELEVEN_API_KEY")
 
 class GenerateRequest(BaseModel):
@@ -27,9 +29,7 @@ class GenerateRequest(BaseModel):
 @app.get("/voice-info/{voice_id}")
 def get_voice_info(voice_id: str):
     url = f"https://api.elevenlabs.io/v1/voices/{voice_id}"
-    headers = {
-        "xi-api-key": ELEVEN_API_KEY
-    }
+    headers = {"xi-api-key": ELEVEN_API_KEY}
     try:
         res = requests.get(url, headers=headers)
         res.raise_for_status()
@@ -46,10 +46,10 @@ def generate_audio(req: GenerateRequest):
 
     language = req.language
     voice_id = req.voice_id
-    if language not in test_sentences:
+    if language not in TEST_TEXTS:
         return {"error": "Language not supported"}
 
-    texts = test_sentences[language]
+    texts = TEST_TEXTS[language]
     audio_urls = {}
 
     for key, input_text in texts.items():
