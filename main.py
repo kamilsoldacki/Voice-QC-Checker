@@ -1,12 +1,14 @@
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import os, requests, base64
 from text_data import TEST_TEXTS
 
 app = FastAPI()
 
+# Middleware for CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,10 +17,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static folder
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Serve index.html at root
+@app.get("/")
+def read_index():
+    return FileResponse("static/index.html")
+
+# Request schema
 class GenerationRequest(BaseModel):
     voice_id: str
     language: str
 
+# Endpoint to generate samples
 @app.post("/generate")
 def generate_audio(data: GenerationRequest):
     voice_id = data.voice_id
@@ -61,6 +73,7 @@ def generate_audio(data: GenerationRequest):
 
     return output
 
+# Endpoint to fetch voice metadata
 @app.get("/voice-info/{voice_id}")
 def get_voice_info(voice_id: str):
     api_key = os.getenv("ELEVEN_API_KEY")
