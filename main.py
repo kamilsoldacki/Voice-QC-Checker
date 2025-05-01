@@ -1,8 +1,5 @@
-
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import os, requests, base64
 from text_data import TEST_TEXTS
@@ -16,12 +13,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@app.get("/")
-def read_index():
-    return FileResponse("static/index.html")
 
 class GenerationRequest(BaseModel):
     voice_id: str
@@ -49,7 +40,14 @@ def generate_audio(data: GenerationRequest):
             json={
                 "text": text,
                 "model_id": model_id,
-                "voice_settings": {"stability": 0.5, "similarity_boost": 0.5}
+                "text_normalization": True,
+                "voice_settings": {
+                    "stability": 0.5,
+                    "similarity_boost": 0.75,
+                    "style": 0.0,
+                    "speed": 1.0,
+                    "use_speaker_boost": True
+                }
             }
         )
         if response.ok:
