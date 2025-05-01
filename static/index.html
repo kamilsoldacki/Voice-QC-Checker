@@ -172,6 +172,60 @@ Model: eleven_multilingual_v2 | Speed: 1.0 | Stability: 0.5 | Similarity: 0.75 |
   </footer>
 
   <script>
+    async function detectLanguage(voiceId) {
+      try {
+        const response = await fetch(`/voice-info/${voiceId}`);
+        const data = await response.json();
+        const lang = data.language;
+        const map = {
+          "English": "English (USA, UK, Australia, Canada)",
+          "Spanish": "Spanish (Spain, Mexico)",
+          "Portuguese": "Portuguese (Brazil, Portugal)",
+          "French": "French (France, Canada)",
+          "Arabic": "Arabic (Saudi Arabia, UAE)",
+          "Chinese": "Chinese (Mandarin)",
+          "German": "German",
+          "Russian": "Russian",
+          "Hindi": "Hindi",
+          "Japanese": "Japanese",
+          "Korean": "Korean",
+          "Polish": "Polish",
+          "Italian": "Italian",
+          "Dutch": "Dutch",
+          "Filipino": "Filipino",
+          "Indonesian": "Indonesian",
+          "Vietnamese": "Vietnamese",
+          "Turkish": "Turkish",
+          "Tamil": "Tamil",
+          "Ukrainian": "Ukrainian",
+          "Romanian": "Romanian",
+          "Swedish": "Swedish",
+          "Hungarian": "Hungarian",
+          "Norwegian": "Norwegian",
+          "Danish": "Danish",
+          "Slovak": "Slovak",
+          "Croatian": "Croatian",
+          "Greek": "Greek",
+          "Czech": "Czech",
+          "Bulgarian": "Bulgarian",
+          "Finnish": "Finnish",
+          "Malay": "Malay"
+        };
+        if (lang && map[lang]) {
+          document.getElementById("language").value = map[lang];
+        }
+      } catch (e) {
+        console.log("Language detection error:", e);
+      }
+    }
+
+    document.getElementById("voiceId").addEventListener("blur", (e) => {
+      const voiceId = e.target.value.trim();
+      if (voiceId.length > 10) {
+        detectLanguage(voiceId);
+      }
+    });
+
     async function generateSamples() {
       const voiceId = document.getElementById("voiceId").value;
       const language = document.getElementById("language").value;
