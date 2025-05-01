@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -59,3 +60,14 @@ def generate_audio(data: GenerationRequest):
             output[key + "_text"] = "Error generating sample."
 
     return output
+
+@app.get("/voice-info/{voice_id}")
+def get_voice_info(voice_id: str):
+    api_key = os.getenv("ELEVEN_API_KEY")
+    url = f"https://api.elevenlabs.io/v1/voices/{voice_id}"
+    response = requests.get(url, headers={"xi-api-key": api_key})
+    if response.ok:
+        data = response.json()
+        return {"language": data.get("labels", {}).get("language", "")}
+    else:
+        return {"error": "Voice not found."}
