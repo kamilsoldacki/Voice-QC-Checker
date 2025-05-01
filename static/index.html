@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,10 +23,9 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       display: flex;
       align-items: center;
-      justify-content: space-between;
     }
     header img {
-      height: 28px;
+      height: 14px;
     }
     main {
       max-width: 700px;
@@ -43,7 +43,17 @@
     p.description {
       font-size: 13px;
       color: #666;
+      margin-bottom: 0.5rem;
+    }
+    .settings-info {
+      font-family: monospace;
+      font-size: 12px;
+      color: #666;
+      background-color: #f2f2f2;
+      padding: 6px 10px;
+      border-radius: 6px;
       margin-bottom: 1.5rem;
+      overflow-x: auto;
     }
     label {
       margin: 8px 0 4px;
@@ -57,6 +67,7 @@
       border: 1px solid #ccc;
       border-radius: 6px;
       box-sizing: border-box;
+      margin-bottom: 12px;
     }
     button {
       background-color: #222;
@@ -65,7 +76,7 @@
       padding: 10px;
       border-radius: 6px;
       font-size: 14px;
-      margin-top: 12px;
+      margin-top: 6px;
       cursor: pointer;
       width: 100%;
     }
@@ -104,14 +115,14 @@
 </head>
 <body>
   <header>
-    <div style="display: flex; align-items: center; gap: 0.75rem;">
-      <img src="https://11labs-nonprd-15f22c1d.s3.eu-west-3.amazonaws.com/0b9cd3e1-9fad-4a5b-b3a0-c96b0a1f1d2b/elevenlabs-logo-black.png" alt="ElevenLabs logo">
-      <span style="font-weight: 600; font-size: 16px;">Voice QC Checker</span>
-    </div>
+    <img src="https://11labs-nonprd-15f22c1d.s3.eu-west-3.amazonaws.com/0b9cd3e1-9fad-4a5b-b3a0-c96b0a1f1d2b/elevenlabs-logo-black.png" alt="ElevenLabs logo">
   </header>
   <main>
     <h1>Voice QC Checker</h1>
-    <p class="description">Quickly evaluate plosives, sibilants and additional audio characteristics for any ElevenLabs voice.</p>
+    <p class="description">Quickly evaluate plosives, sibilants, and other key sound characteristics for any ElevenLabs voice.</p>
+    <pre class="settings-info">
+Model: eleven_multilingual_v2 | Speed: 1.0 | Stability: 0.5 | Similarity: 0.75 | Style: 0.0 | Speaker boost: ON | Normalization: ON
+    </pre>
 
     <label for="voiceId">Voice ID</label>
     <input type="text" id="voiceId" placeholder="Enter voice ID" />
@@ -184,11 +195,12 @@
       ["plosives", "sibilants", "additional"].forEach(type => {
         const sample = data[type];
         const text = data[type + "_text"];
+        const label = type === "additional" ? "ADDITIONAL SOUNDS" : type.toUpperCase();
 
         const div = document.createElement("div");
         div.className = "sample";
         div.innerHTML = `
-          <strong>${type.toUpperCase()}:</strong>
+          <strong>${label}:</strong>
           <div>${text}</div>
           <audio controls src="data:audio/mpeg;base64,${sample}"></audio>
         `;
