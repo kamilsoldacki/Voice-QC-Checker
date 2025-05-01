@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -172,6 +171,50 @@ Model: eleven_multilingual_v2\nSpeed: 1.0 | Stability: 0.5 | Similarity: 0.75 | 
   </footer>
 
   <script>
+
+const languageCodeMap = {
+  "pl": "Polish",
+  "en": "English (USA)",
+  "gb": "English (UK)",
+  "au": "English (Australia)",
+  "ca": "English (Canada)",
+  "hi": "Hindi",
+  "es": "Spanish (Spain)",
+  "mx": "Spanish (Mexico)",
+  "ar": "Arabic (Saudi Arabia)",
+  "ae": "Arabic (UAE)",
+  "pt": "Portuguese (Brazil)",
+  "br": "Portuguese (Brazil)",
+  "ru": "Russian",
+  "fr": "French (France)",
+  "qc": "French (Canada)",
+  "id": "Indonesian",
+  "ja": "Japanese",
+  "de": "German",
+  "tl": "Filipino",
+  "ko": "Korean",
+  "vi": "Vietnamese",
+  "tr": "Turkish",
+  "ta": "Tamil",
+  "it": "Italian",
+  "uk": "Ukrainian",
+  "nl": "Dutch",
+  "ro": "Romanian",
+  "sv": "Swedish",
+  "hu": "Hungarian",
+  "no": "Norwegian",
+  "da": "Danish",
+  "sk": "Slovak",
+  "hr": "Croatian",
+  "el": "Greek",
+  "cs": "Czech",
+  "bg": "Bulgarian",
+  "fi": "Finnish",
+  "ms": "Malay",
+  "zh": "Chinese (Mandarin)"
+};
+
+
     async function detectLanguage(voiceId) {
       try {
         const response = await fetch(`/voice-info/${voiceId}`);
