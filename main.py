@@ -1,7 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import requests
 import os
@@ -19,29 +18,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve frontend static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@app.get("/")
-def read_index():
-    return FileResponse("static/index.html")
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 ELEVEN_API_KEY = os.getenv("ELEVEN_API_KEY")
 
 class GenerateRequest(BaseModel):
     voice_id: str
     language: str
-
-@app.get("/voice-info/{voice_id}")
-def get_voice_info(voice_id: str):
-    url = f"https://api.elevenlabs.io/v1/voices/{voice_id}"
-    headers = {"xi-api-key": ELEVEN_API_KEY}
-    try:
-        res = requests.get(url, headers=headers)
-        res.raise_for_status()
-        return res.json()
-    except Exception as e:
-        return {"error": str(e)}
 
 @app.post("/generate")
 def generate_audio(req: GenerateRequest):
@@ -56,7 +39,7 @@ def generate_audio(req: GenerateRequest):
         return {"error": "Language not supported"}
 
     texts = TEST_TEXTS[language]
-    audio_results = {}
+    audio_urls = {}
 
     for key, input_text in texts.items():
         payload = {
@@ -80,11 +63,11 @@ def generate_audio(req: GenerateRequest):
             )
 
             if response.status_code == 200:
-                audio_results[key] = response.content  # raw audio bytes
+                audio_urls[key] = response.content
             else:
-                audio_results[key] = None
+                audio_urls[key] = None
 
-        except Exception:
-            audio_results[key] = None
+        except Exception as e:
+            audio_urls[key] = None
 
-    return audio_results
+    return audio_urls

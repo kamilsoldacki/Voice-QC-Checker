@@ -1,10 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Voice QC Checker</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Voice QC Checker</title>
+  <style>
+    body { font-family: Arial; padding: 2rem; max-width: 600px; margin: auto; }
+    input, select, button { width: 100%; margin: 0.5rem 0; padding: 0.5rem; }
+    .footer { margin-top: 3rem; font-size: 0.9em; text-align: center; color: #888; }
+  </style>
 </head>
 <body>
-    <h1>Voice QC Checker</h1>
-    <p>Interface loaded. Backend is mounted at /generate</p>
+  <h1>Voice QC Checker</h1>
+  <p>Quickly evaluate plosives, sibilants, and other key sound characteristics for any ElevenLabs voice.</p>
+  <div><strong>Model:</strong> eleven_multilingual_v2<br/>
+       Speed: 1.0 | Stability: 0.5 | Similarity: 0.75 | Style: 0.0<br/>
+       Speaker boost: ON | Normalization text: ON</div>
+  <input id="voiceId" placeholder="Enter Voice ID" />
+  <select id="language"></select>
+  <button onclick="generate()">Generate</button>
+  <div id="status"></div>
+  <div class="footer">Built with ❤️ for the ElevenLabs team · Kamil Soldacki</div>
+  <script>
+    const langs = ["Polish", "English (USA, UK, Australia, Canada)", "Spanish (Spain, Mexico)"];
+    const languageSelect = document.getElementById('language');
+    langs.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l;
+      opt.textContent = l;
+      languageSelect.appendChild(opt);
+    });
+
+    async function generate() {
+      const voiceId = document.getElementById("voiceId").value;
+      const language = document.getElementById("language").value;
+      document.getElementById("status").textContent = "Generating samples...";
+
+      const res = await fetch('/generate', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ voice_id: voiceId, language })
+      });
+
+      if (res.ok) {
+        document.getElementById("status").textContent = "Samples generated (check response in dev tools)";
+      } else {
+        document.getElementById("status").textContent = "Error generating samples.";
+      }
+    }
+  </script>
 </body>
 </html>
