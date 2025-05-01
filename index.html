@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Voice QC Checker</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; background-color: #f9f9f9; }
+    h1 { color: #333; }
+    label, select, input, button { display: block; margin: 1rem 0; }
+    .sample { margin-top: 2rem; padding: 1rem; background: #fff; border: 1px solid #ccc; border-radius: 5px; }
+    .sample audio { width: 100%; }
+    .sample-text { margin-top: 0.5rem; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Voice QC Checker</h1>
+  <form id="qcForm">
+    <label for="voiceId">Voice ID:</label>
+    <input type="text" id="voiceId" name="voiceId" required />
+    
+    <label for="language">Language:</label>
+    <select id="language" name="language" required></select>
+    
+    <button type="submit">Generate</button>
+  </form>
+
+  <div id="results"></div>
+
+  <script>
+    const languageData = {};
+
+    async function loadLanguages() {
+      const res = await fetch('/languages');
+      const data = await res.json();
+      const select = document.getElementById('language');
+      data.languages.forEach(lang => {
+        languageData[lang.name] = lang;
+        const opt = document.createElement('option');
+        opt.value = lang.name;
+        opt.textContent = lang.name;
+        select.appendChild(opt);
+      });
+    }
+
+    document.getElementById('qcForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const voiceId = document.getElementById('voiceId').value;
+      const language = document.getElementById('language').value;
+      const response = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voiceId, language })
+      });
+      const data = await response.json();
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+
+      ['plosives', 'sibilants', 'additional'].forEach(type => {
+        const div = document.createElement('div');
+        div.className = 'sample';
+        const audio = document.createElement('audio');
+        audio.controls = true;
+        audio.src = data[type].audio_url;
+        const text = document.createElement('div');
+        text.className = 'sample-text';
+        text.textContent = data[type].text;
+        div.appendChild(audio);
+        div.appendChild(text);
+        resultsDiv.appendChild(div);
+      });
+    });
+
+    loadLanguages();
+  </script>
+</body>
+</html>
