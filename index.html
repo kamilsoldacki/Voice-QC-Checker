@@ -6,27 +6,127 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Voice QC Checker</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; background-color: #f9f9f9; }
-    h1 { color: #333; }
-    label, select, input, button { display: block; margin: 1rem 0; }
-    .sample { margin-top: 2rem; padding: 1rem; background: #fff; border: 1px solid #ccc; border-radius: 5px; }
-    .sample audio { width: 100%; }
-    .sample-text { margin-top: 0.5rem; font-style: italic; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f5f5f7;
+      color: #1c1c1e;
+      display: flex;
+    }
+
+    aside {
+      width: 240px;
+      background-color: #ffffff;
+      border-right: 1px solid #e5e5e5;
+      height: 100vh;
+      padding: 1rem;
+    }
+
+    aside h2 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #888;
+    }
+
+    aside ul {
+      list-style: none;
+    }
+
+    aside li {
+      margin: 0.75rem 0;
+      color: #333;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem 3rem;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #dcdcdc;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+
+    button {
+      margin-top: 1.5rem;
+      padding: 0.75rem 1.5rem;
+      background-color: #4f46e5;
+      color: white;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #4338ca;
+    }
+
+    .sample {
+      margin-top: 2rem;
+      background: white;
+      border-radius: 14px;
+      border: 1px solid #e5e5e5;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .sample audio {
+      width: 250px;
+    }
+
+    .sample-text {
+      font-size: 0.95rem;
+      color: #555;
+      flex: 1;
+    }
   </style>
 </head>
 <body>
-  <h1>Voice QC Checker</h1>
-  <form id="qcForm">
-    <label for="voiceId">Voice ID:</label>
-    <input type="text" id="voiceId" name="voiceId" required />
-    
-    <label for="language">Language:</label>
-    <select id="language" name="language" required></select>
-    
-    <button type="submit">Generate</button>
-  </form>
+  <aside>
+    <h2>Voice QC Checker</h2>
+    <ul>
+      <li>Home</li>
+      <li>Samples</li>
+      <li>Settings</li>
+    </ul>
+  </aside>
+  <main>
+    <h1>Evaluate ElevenLabs Voice</h1>
+    <form id="qcForm">
+      <label for="voiceId">Voice ID</label>
+      <input type="text" id="voiceId" name="voiceId" required />
 
-  <div id="results"></div>
+      <label for="language">Language</label>
+      <select id="language" name="language" required></select>
+
+      <button type="submit">Generate Samples</button>
+    </form>
+
+    <div id="results"></div>
+  </main>
 
   <script>
     const languageData = {};
