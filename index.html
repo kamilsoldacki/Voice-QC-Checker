@@ -62,7 +62,7 @@
       const voiceId = document.getElementById("voiceId").value;
       const language = document.getElementById("language").value;
 
-      const response = await fetch("/generate", {
+      const response = await fetch("https://voice-qc-checker.onrender.com/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
