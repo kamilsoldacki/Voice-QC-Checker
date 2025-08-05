@@ -15,6 +15,10 @@ with open("texts.json", "r", encoding="utf-8") as f:
 def index():
     return send_from_directory('.', 'index.html')
 
+@app.route('/conversation-tester.html')
+def conversation_tester():
+    return send_from_directory('static_pages', 'conversation-tester.html')
+
 @app.route('/languages')
 def languages():
     langs = sorted(TEXTS.keys())
