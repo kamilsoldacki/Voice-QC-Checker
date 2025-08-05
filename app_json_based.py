@@ -76,5 +76,101 @@ def generate_sample(voice_id, text):
     else:
         return ""
 
+
+
+
+@app.route('/api/conversation', methods=['POST'])
+def generate_conversation():
+    from openai import OpenAI
+    import base64
+
+    openai_api_key = os.environ.get("OPEN_API_KEY")
+    eleven_api_key = os.environ.get("ELEVEN_API_KEY")
+
+    if not openai_api_key or not eleven_api_key:
+        return jsonify({"error": "Missing API keys"}), 500
+
+    data = request.get_json()
+    voice_id_a = data.get("voiceIdA")
+    voice_id_b = data.get("voiceIdB")
+    topic = data.get("topic")
+
+    if not all([voice_id_a, voice_id_b, topic]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # 1. Generate dialogue from OpenAI
+    client = OpenAI(api_key=openai_api_key)
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {
+                "role": "system",
+                "content": "Generate a short, natural, 1-minute conversation (6–8 lines) between two people. Label lines as A: and B:. Keep it realistic.",
+            },
+            {
+                "role": "user",
+                "content": f"Topic: {topic}",
+            }
+        ]
+    )
+
+    lines = response.choices[0].message.content.strip().split("\n")
+    dialogue = []
+
+    for line in lines:
+        if not line.strip():
+            continue
+        if line.startswith("A:"):
+            speaker = "A"
+            voice_id = voice_id_a
+            text = line[2:].strip()
+        elif line.startswith("B:"):
+            speaker = "B"
+            voice_id = voice_id_b
+            text = line[2:].strip()
+        else:
+            continue  # skip malformed lines
+
+        # Generate audio via ElevenLabs
+        tts_response = requests.post(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
+            headers={
+                "xi-api-key": eleven_api_key,
+                "Content-Type": "application/json"
+            },
+            json={
+                "text": text,
+                "model_id": "eleven_multilingual_v2",
+                "voice_settings": {
+                    "stability": 0.5,
+                    "similarity_boost": 0.75,
+                    "style": 0.0,
+                    "use_speaker_boost": True
+                }
+            }
+        )
+
+        if tts_response.status_code == 200:
+            filename = f"{uuid.uuid4()}.mp3"
+            filepath = os.path.join("static", filename)
+            os.makedirs("static", exist_ok=True)
+            with open(filepath, "wb") as f:
+                f.write(tts_response.content)
+            audio_url = f"/static/{filename}"
+        else:
+            audio_url = ""
+
+        dialogue.append({
+            "speaker": speaker,
+            "text": text,
+            "audio_url": audio_url
+        })
+
+    return jsonify({"dialogue": dialogue})
+
+
+
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
