@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Conversational Voice Tester</title>
+</head>
+<body>
+  <h1>🗣️ Conversational Voice Tester</h1>
+  <form id="dialogForm">
+    <label>Voice ID A: <input type="text" id="voiceA" required /></label><br/>
+    <label>Voice ID B: <input type="text" id="voiceB" required /></label><br/>
+    <label>Topic: <input type="text" id="topic" required /></label><br/>
+    <button type="submit">Generate Dialogue</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    document.getElementById("dialogForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const voiceIdA = document.getElementById("voiceA").value;
+      const voiceIdB = document.getElementById("voiceB").value;
+      const topic = document.getElementById("topic").value;
+
+      const res = await fetch("/api/conversation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voiceIdA, voiceIdB, topic })
+      });
+
+      const data = await res.json();
+      const container = document.getElementById("result");
+      container.innerHTML = "<h2>Dialogue:</h2>";
+
+      data.dialogue.forEach((line, i) => {
+        const p = document.createElement("p");
+        p.textContent = `${line.speaker}: ${line.text}`;
+        const audio = document.createElement("audio");
+        audio.controls = true;
+        audio.src = line.audio_url;
+        container.appendChild(p);
+        container.appendChild(audio);
+      });
+    });
+  </script>
+</body>
+</html>
