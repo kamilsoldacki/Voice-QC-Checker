@@ -155,50 +155,56 @@
 
   <script>
     document.getElementById("dialogForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const voiceIdA = document.getElementById("voiceA").value;
-      const voiceIdB = document.getElementById("voiceB").value;
-      const topic = document.getElementById("topic").value;
+  e.preventDefault();
 
-      const res = await fetch("/api/conversation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ voiceIdA, voiceIdB, topic })
-      });
+  const button = e.submitter;
+  button.disabled = true;
+  button.textContent = "Generating...";
 
-      const data = await res.json();
-      const container = document.getElementById("result");
-      container.innerHTML = "";
+  const voiceIdA = document.getElementById("voiceA").value;
+  const voiceIdB = document.getElementById("voiceB").value;
+  const topic = document.getElementById("topic").value;
 
-      // Wyświetl tekst dialogu
-      const dialogueHeader = document.createElement("h2");
-      dialogueHeader.textContent = "Generated Dialogue:";
-      container.appendChild(dialogueHeader);
+  const res = await fetch("/api/conversation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ voiceIdA, voiceIdB, topic })
+  });
 
-      data.dialogue.forEach((line) => {
-        const p = document.createElement("p");
-        p.className = "dialogue-line";
-        p.textContent = `${line.speaker}: ${line.text}`;
-        container.appendChild(p);
-      });
+  const data = await res.json();
+  const container = document.getElementById("result");
+  container.innerHTML = "";
 
-      // Wyświetl pełny odtwarzacz audio
-      if (data.combined_audio_url) {
-        const audioWrapper = document.createElement("div");
-        audioWrapper.className = "audio-wrapper";
+  const dialogueHeader = document.createElement("h2");
+  dialogueHeader.textContent = "Generated Dialogue:";
+  container.appendChild(dialogueHeader);
 
-        const audioHeader = document.createElement("h2");
-        audioHeader.textContent = "🎧 Full Conversation:";
+  data.dialogue.forEach((line) => {
+    const p = document.createElement("p");
+    p.className = "dialogue-line";
+    p.textContent = `${line.speaker}: ${line.text}`;
+    container.appendChild(p);
+  });
 
-        const audio = document.createElement("audio");
-        audio.controls = true;
-        audio.src = data.combined_audio_url;
+  if (data.combined_audio_url) {
+    const audioWrapper = document.createElement("div");
+    audioWrapper.className = "audio-wrapper";
 
-        audioWrapper.appendChild(audioHeader);
-        audioWrapper.appendChild(audio);
-        container.appendChild(audioWrapper);
-      }
-    });
+    const audioHeader = document.createElement("h2");
+    audioHeader.textContent = "Full Conversation:";
+
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.src = data.combined_audio_url;
+
+    audioWrapper.appendChild(audioHeader);
+    audioWrapper.appendChild(audio);
+    container.appendChild(audioWrapper);
+  }
+
+  button.disabled = false;
+  button.textContent = "Generate Conversation";
+});
   </script>
 </body>
 </html>
