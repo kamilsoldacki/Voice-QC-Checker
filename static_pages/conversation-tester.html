@@ -17,31 +17,42 @@
 
   <script>
     document.getElementById("dialogForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const voiceIdA = document.getElementById("voiceA").value;
-      const voiceIdB = document.getElementById("voiceB").value;
-      const topic = document.getElementById("topic").value;
+  e.preventDefault();
+  const voiceIdA = document.getElementById("voiceA").value;
+  const voiceIdB = document.getElementById("voiceB").value;
+  const topic = document.getElementById("topic").value;
 
-      const res = await fetch("/api/conversation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ voiceIdA, voiceIdB, topic })
-      });
+  const res = await fetch("/api/conversation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ voiceIdA, voiceIdB, topic })
+  });
 
-      const data = await res.json();
-      const container = document.getElementById("result");
-      container.innerHTML = "<h2>Dialogue:</h2>";
+  const data = await res.json();
+  const container = document.getElementById("result");
+  container.innerHTML = "<h2>Dialogue:</h2>";
 
-      data.dialogue.forEach((line, i) => {
-        const p = document.createElement("p");
-        p.textContent = `${line.speaker}: ${line.text}`;
-        const audio = document.createElement("audio");
-        audio.controls = true;
-        audio.src = line.audio_url;
-        container.appendChild(p);
-        container.appendChild(audio);
-      });
-    });
+  data.dialogue.forEach((line, i) => {
+    const p = document.createElement("p");
+    p.textContent = `${line.speaker}: ${line.text}`;
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.src = line.audio_url;
+    container.appendChild(p);
+    container.appendChild(audio);
+  });
+
+  // 🔊 Cały dialog jako jeden plik
+  if (data.combined_audio_url) {
+    const h2 = document.createElement("h2");
+    h2.textContent = "🔊 Cała rozmowa:";
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.src = data.combined_audio_url;
+    container.appendChild(h2);
+    container.appendChild(audio);
+  }
+});
   </script>
 </body>
 </html>
