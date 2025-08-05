@@ -1,5 +1,5 @@
-
 from flask import Flask, request, jsonify, send_from_directory
+from pydub import AudioSegment
 import os
 import json
 import requests
@@ -166,7 +166,26 @@ def generate_conversation():
             "audio_url": audio_url
         })
 
-    return jsonify({"dialogue": dialogue})
+        # 🔊 Połącz wszystkie ścieżki audio w jedną
+    combined = AudioSegment.empty()
+
+    for line in dialogue:
+        path = line["audio_url"].lstrip("/")  # usuń /
+        if os.path.exists(path):
+            segment = AudioSegment.from_mp3(path)
+            combined += segment
+
+    # 💾 Zapisz do jednego pliku .mp3
+    combined_filename = f"{uuid.uuid4()}_combined.mp3"
+    combined_filepath = os.path.join("static", combined_filename)
+    combined.export(combined_filepath, format="mp3")
+
+    # 🔙 Zwróć wszystkie dane razem
+    return jsonify({
+        "dialogue": dialogue,
+        "combined_audio_url": f"/static/{combined_filename}"
+    })
+
 
 
 
