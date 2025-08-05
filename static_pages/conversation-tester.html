@@ -2,53 +2,192 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Conversational Voice Tester</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background-color: #f9f9f9;
+      color: #1c1c1e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    header {
+      width: 100%;
+      font-weight: bold;
+      font-size: 1.2rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .card {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .card h1 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 1rem;
+    }
+
+    label {
+      font-weight: 500;
+      display: block;
+      margin: 1rem 0 0.3rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 0.75rem;
+      background-color: black;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .loading {
+      text-align: center;
+      font-size: 0.95rem;
+      color: #666;
+      margin-top: 2rem;
+    }
+
+    .results {
+      margin-top: 2rem;
+      width: 100%;
+    }
+
+    .dialogue-line {
+      font-size: 0.95rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    .audio-wrapper {
+      margin-top: 2rem;
+    }
+
+    audio {
+      width: 100%;
+    }
+
+    footer {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: #777;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>🗣️ Conversational Voice Tester</h1>
-  <form id="dialogForm">
-    <label>Voice ID A: <input type="text" id="voiceA" required /></label><br/>
-    <label>Voice ID B: <input type="text" id="voiceB" required /></label><br/>
-    <label>Topic: <input type="text" id="topic" required /></label><br/>
-    <button type="submit">Generate Dialogue</button>
-  </form>
+  <div class="container">
+    <header>IIElevenLabs</header>
 
-  <div id="result"></div>
+    <div class="card">
+      <h1>Conversational Voice Tester</h1>
+      <p>Generate a short natural conversation between two voices and listen to the full result.</p>
+      <form id="dialogForm">
+        <label for="voiceA">Voice ID A</label>
+        <input type="text" id="voiceA" required />
+
+        <label for="voiceB">Voice ID B</label>
+        <input type="text" id="voiceB" required />
+
+        <label for="topic">Topic (e.g. ordering coffee, talking about weather)</label>
+        <input type="text" id="topic" required />
+
+        <button type="submit">Generate Conversation</button>
+      </form>
+    </div>
+
+    <div class="results" id="result"></div>
+
+    <footer>
+      Built with ❤️ for the ElevenLabs team · Kamil Soldacki
+    </footer>
+  </div>
 
   <script>
     document.getElementById("dialogForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const voiceIdA = document.getElementById("voiceA").value;
-  const voiceIdB = document.getElementById("voiceB").value;
-  const topic = document.getElementById("topic").value;
+      e.preventDefault();
+      const voiceIdA = document.getElementById("voiceA").value;
+      const voiceIdB = document.getElementById("voiceB").value;
+      const topic = document.getElementById("topic").value;
 
-  const res = await fetch("/api/conversation", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ voiceIdA, voiceIdB, topic })
-  });
+      const res = await fetch("/api/conversation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voiceIdA, voiceIdB, topic })
+      });
 
-  const data = await res.json();
-  const container = document.getElementById("result");
-  container.innerHTML = "<h2>Dialogue:</h2>";
+      const data = await res.json();
+      const container = document.getElementById("result");
+      container.innerHTML = "";
 
-  data.dialogue.forEach((line, i) => {
-  const p = document.createElement("p");
-  p.textContent = `${line.speaker}: ${line.text}`;
-  container.appendChild(p);
-});
+      // Wyświetl tekst dialogu
+      const dialogueHeader = document.createElement("h2");
+      dialogueHeader.textContent = "Generated Dialogue:";
+      container.appendChild(dialogueHeader);
 
-  // 🔊 Cały dialog jako jeden plik
-  if (data.combined_audio_url) {
-    const h2 = document.createElement("h2");
-    h2.textContent = "🔊 Cała rozmowa:";
-    const audio = document.createElement("audio");
-    audio.controls = true;
-    audio.src = data.combined_audio_url;
-    container.appendChild(h2);
-    container.appendChild(audio);
-  }
-});
+      data.dialogue.forEach((line) => {
+        const p = document.createElement("p");
+        p.className = "dialogue-line";
+        p.textContent = `${line.speaker}: ${line.text}`;
+        container.appendChild(p);
+      });
+
+      // Wyświetl pełny odtwarzacz audio
+      if (data.combined_audio_url) {
+        const audioWrapper = document.createElement("div");
+        audioWrapper.className = "audio-wrapper";
+
+        const audioHeader = document.createElement("h2");
+        audioHeader.textContent = "🎧 Full Conversation:";
+
+        const audio = document.createElement("audio");
+        audio.controls = true;
+        audio.src = data.combined_audio_url;
+
+        audioWrapper.appendChild(audioHeader);
+        audioWrapper.appendChild(audio);
+        container.appendChild(audioWrapper);
+      }
+    });
   </script>
 </body>
 </html>
