@@ -33,14 +33,10 @@
   container.innerHTML = "<h2>Dialogue:</h2>";
 
   data.dialogue.forEach((line, i) => {
-    const p = document.createElement("p");
-    p.textContent = `${line.speaker}: ${line.text}`;
-    const audio = document.createElement("audio");
-    audio.controls = true;
-    audio.src = line.audio_url;
-    container.appendChild(p);
-    container.appendChild(audio);
-  });
+  const p = document.createElement("p");
+  p.textContent = `${line.speaker}: ${line.text}`;
+  container.appendChild(p);
+});
 
   // 🔊 Cały dialog jako jeden plik
   if (data.combined_audio_url) {
