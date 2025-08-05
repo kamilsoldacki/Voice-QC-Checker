@@ -93,8 +93,11 @@
     }
 
     .audio-wrapper {
-      margin-top: 2rem;
-    }
+  margin-top: 2rem;
+  background-color: #f7f7f7;
+  border-radius: 12px;
+  padding: 1rem;
+}
 
     audio {
       width: 100%;
@@ -106,6 +109,14 @@
       color: #777;
       text-align: center;
     }
+
+    .card h2 {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #1c1c1e;
+}
 
     @media (max-width: 600px) {
       .card {
@@ -131,11 +142,11 @@
         <label for="topic">Topic (e.g. ordering coffee, talking about weather)</label>
         <input type="text" id="topic" required />
 
-        <button type="submit">Generate Conversation</button>
+        <button type="submit">Generate</button>
       </form>
-    </div>
 
-    <div class="results" id="result"></div>
+<div class="results" id="result"></div>
+</div>
 
     <footer>
       Built with ❤️ for the ElevenLabs team · Kamil Soldacki
