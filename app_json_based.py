@@ -7,7 +7,7 @@ import uuid
 
 app = Flask(__name__)
 
-# Wczytanie tekstów z pliku JSON (dla innych endpointów, np. /generate)
+# Wczytanie tekstów z pliku JSON
 with open("texts.json", "r", encoding="utf-8") as f:
     TEXTS = json.load(f)
 
@@ -98,24 +98,29 @@ def generate_conversation():
     if not all([voice_id_a, voice_id_b, topic]):
         return jsonify({"error": "Missing required fields"}), 400
 
-    # 1. Generate dialogue from OpenAI
     client = OpenAI(api_key=openai_api_key)
+
+    if model == "eleven_v3":
+        system_prompt = (
+            "Generate a short, natural, but expressive, emotionally varied 1-minute conversation between two people (A and B). "
+            "Add appropriate audio tags like [HAPPY], [SOFT], [PAUSED], etc. to reflect emotions, volume, and pacing. "
+            "Each line must start with A: or B:. Use clear and diverse emotional states. "
+            f"A speaks using {length_a} sentences.\n"
+            f"B speaks using {length_b} sentences."
+        )
+    else:
+        system_prompt = (
+            "Generate a short, natural, 1-minute conversation between two people labeled A and B.\n"
+            f"A speaks using {length_a} sentences.\n"
+            f"B speaks using {length_b} sentences.\n"
+            "Label each line clearly as A: or B:. Keep it realistic and human-like."
+        )
+
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {
-                "role": "system",
-                "content": (
-                    "Generate a short, natural, 1-minute conversation between two people labeled A and B.\n"
-                    f"A speaks using {length_a} sentences.\n"
-                    f"B speaks using {length_b} sentences.\n"
-                    "Label each line clearly as A: or B:. Keep it realistic and human-like."
-                ),
-            },
-            {
-                "role": "user",
-                "content": f"Topic: {topic}",
-            }
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Topic: {topic}"},
         ]
     )
 
@@ -134,9 +139,8 @@ def generate_conversation():
             voice_id = voice_id_b
             text = line[2:].strip()
         else:
-            continue  # skip malformed lines
+            continue
 
-        # Generate audio via ElevenLabs
         tts_response = requests.post(
             f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
             headers={
@@ -171,20 +175,17 @@ def generate_conversation():
             "audio_url": audio_url
         })
 
-    # 🔊 Połącz wszystkie ścieżki audio w jedną
     combined = AudioSegment.empty()
     for line in dialogue:
-        path = line["audio_url"].lstrip("/")  # usuń /
+        path = line["audio_url"].lstrip("/")
         if os.path.exists(path):
             segment = AudioSegment.from_mp3(path)
             combined += segment
 
-    # 💾 Zapisz do jednego pliku .mp3
     combined_filename = f"{uuid.uuid4()}_combined.mp3"
     combined_filepath = os.path.join("static", combined_filename)
     combined.export(combined_filepath, format="mp3")
 
-    # 🔙 Zwróć wszystkie dane razem
     return jsonify({
         "dialogue": dialogue,
         "combined_audio_url": f"/static/{combined_filename}"
