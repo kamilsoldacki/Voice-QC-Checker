@@ -63,6 +63,21 @@
       margin-bottom: 0.5rem;
     }
 
+    .flex-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+      margin-bottom: 1rem;
+    }
+
+    .flex-row label {
+      flex: 1;
+    }
+
+    .fixed-width {
+      width: 150px;
+    }
+
     button {
       width: 100%;
       margin-top: 1.5rem;
@@ -123,6 +138,15 @@
       .card {
         padding: 1rem;
       }
+
+      .flex-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .fixed-width {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -132,26 +156,40 @@
 
     <div class="card">
       <h1>Conversational Voice Tester</h1>
-      <p>Generate a short natural conversation between two voices and listen to the full result.</p>
+      <p>Test the chemistry between voices in a natural dialogue and hear how they interact.</p>
       <form id="dialogForm">
-        <label for="voiceA">Voice ID A</label>
-        <input type="text" id="voiceA" required />
 
-        <label for="lengthA">Length of segment for Voice A</label>
-        <select id="lengthA">
-          <option value="short">short</option>
-          <option value="long">long</option>
-        </select>
+        <!-- Voice A -->
+        <div class="flex-row">
+          <label>
+            Voice ID A
+            <input type="text" id="voiceA" required />
+          </label>
+          <label class="fixed-width">
+            Segments Length
+            <select id="lengthA">
+              <option value="short">short</option>
+              <option value="long">long</option>
+            </select>
+          </label>
+        </div>
 
-        <label for="voiceB">Voice ID B</label>
-        <input type="text" id="voiceB" required />
+        <!-- Voice B -->
+        <div class="flex-row">
+          <label>
+            Voice ID B
+            <input type="text" id="voiceB" required />
+          </label>
+          <label class="fixed-width">
+            Segments Length
+            <select id="lengthB">
+              <option value="short">short</option>
+              <option value="long">long</option>
+            </select>
+          </label>
+        </div>
 
-        <label for="lengthB">Length of segment for Voice B</label>
-        <select id="lengthB">
-          <option value="short">short</option>
-          <option value="long">long</option>
-        </select>
-
+        <!-- Model -->
         <label for="model">Model</label>
         <select id="model" required>
           <option value="eleven_v3">eleven_v3</option>
@@ -160,9 +198,11 @@
           <option value="eleven_turbo_v2">eleven_turbo_v2</option>
         </select>
 
-        <label for="topic">Topic (e.g. ordering coffee, talking about weather, NBA, support service)</label>
+        <!-- Topic -->
+        <label for="topic">Topic (e.g. ordering coffee, talking about weather, support service)</label>
         <input type="text" id="topic" required />
 
+        <!-- Submit -->
         <button type="submit">Generate</button>
       </form>
 
@@ -200,7 +240,7 @@
       container.innerHTML = "";
 
       const dialogueHeader = document.createElement("h2");
-      dialogueHeader.textContent = "Generated Dialogue:";
+      dialogueHeader.textContent = "Script:";
       container.appendChild(dialogueHeader);
 
       data.dialogue.forEach((line) => {
@@ -215,7 +255,7 @@
         audioWrapper.className = "audio-wrapper";
 
         const audioHeader = document.createElement("h2");
-        audioHeader.textContent = "Full Conversation:";
+        audioHeader.textContent = "Take a listen:";
 
         const audio = document.createElement("audio");
         audio.controls = true;
