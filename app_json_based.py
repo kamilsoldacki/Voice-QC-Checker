@@ -101,7 +101,7 @@ def generate_conversation():
     client = OpenAI(api_key=openai_api_key)
 
     if model == "eleven_v3":
-    system_prompt = (
+        system_prompt = (
         "Generate a realistic, emotionally expressive 1-minute conversation between two people labeled A and B.\n\n"
         "Format:\n"
         "- Each line must begin with A: or B:\n"
