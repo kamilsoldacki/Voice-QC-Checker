@@ -54,12 +54,13 @@
       margin: 1rem 0 0.3rem;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 0.6rem 0.75rem;
       font-size: 1rem;
       border-radius: 8px;
       border: 1px solid #ccc;
+      margin-bottom: 0.5rem;
     }
 
     button {
@@ -93,11 +94,11 @@
     }
 
     .audio-wrapper {
-  margin-top: 2rem;
-  background-color: #f7f7f7;
-  border-radius: 12px;
-  padding: 1rem;
-}
+      margin-top: 2rem;
+      background-color: #f7f7f7;
+      border-radius: 12px;
+      padding: 1rem;
+    }
 
     audio {
       width: 100%;
@@ -111,12 +112,12 @@
     }
 
     .card h2 {
-  font-size: 1rem;
-  font-weight: bold;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
-  color: #1c1c1e;
-}
+      font-size: 1rem;
+      font-weight: bold;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: #1c1c1e;
+    }
 
     @media (max-width: 600px) {
       .card {
@@ -136,8 +137,28 @@
         <label for="voiceA">Voice ID A</label>
         <input type="text" id="voiceA" required />
 
+        <label for="lengthA">Length of segment for Voice A</label>
+        <select id="lengthA">
+          <option value="short">Short</option>
+          <option value="long">Long</option>
+        </select>
+
         <label for="voiceB">Voice ID B</label>
         <input type="text" id="voiceB" required />
+
+        <label for="lengthB">Length of segment for Voice B</label>
+        <select id="lengthB">
+          <option value="short">Short</option>
+          <option value="long">Long</option>
+        </select>
+
+        <label for="model">Model</label>
+        <select id="model" required>
+          <option value="eleven_v3">eleven_v3</option>
+          <option value="eleven_multilingual_v2" selected>eleven_multilingual_v2</option>
+          <option value="eleven_flash_v2_5">eleven_flash_v2_5</option>
+          <option value="eleven_turbo_v2">eleven_turbo_v2</option>
+        </select>
 
         <label for="topic">Topic (e.g. ordering coffee, talking about weather)</label>
         <input type="text" id="topic" required />
@@ -145,8 +166,8 @@
         <button type="submit">Generate</button>
       </form>
 
-<div class="results" id="result"></div>
-</div>
+      <div class="results" id="result"></div>
+    </div>
 
     <footer>
       Built with ❤️ for the ElevenLabs team · Kamil Soldacki
@@ -155,56 +176,59 @@
 
   <script>
     document.getElementById("dialogForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+      e.preventDefault();
 
-  const button = e.submitter;
-  button.disabled = true;
-  button.textContent = "Generating...";
+      const button = e.submitter;
+      button.disabled = true;
+      button.textContent = "Generating...";
 
-  const voiceIdA = document.getElementById("voiceA").value;
-  const voiceIdB = document.getElementById("voiceB").value;
-  const topic = document.getElementById("topic").value;
+      const voiceIdA = document.getElementById("voiceA").value;
+      const voiceIdB = document.getElementById("voiceB").value;
+      const lengthA = document.getElementById("lengthA").value;
+      const lengthB = document.getElementById("lengthB").value;
+      const model = document.getElementById("model").value;
+      const topic = document.getElementById("topic").value;
 
-  const res = await fetch("/api/conversation", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ voiceIdA, voiceIdB, topic })
-  });
+      const res = await fetch("/api/conversation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voiceIdA, voiceIdB, topic, model, lengthA, lengthB })
+      });
 
-  const data = await res.json();
-  const container = document.getElementById("result");
-  container.innerHTML = "";
+      const data = await res.json();
+      const container = document.getElementById("result");
+      container.innerHTML = "";
 
-  const dialogueHeader = document.createElement("h2");
-  dialogueHeader.textContent = "Generated Dialogue:";
-  container.appendChild(dialogueHeader);
+      const dialogueHeader = document.createElement("h2");
+      dialogueHeader.textContent = "Generated Dialogue:";
+      container.appendChild(dialogueHeader);
 
-  data.dialogue.forEach((line) => {
-    const p = document.createElement("p");
-    p.className = "dialogue-line";
-    p.textContent = `${line.speaker}: ${line.text}`;
-    container.appendChild(p);
-  });
+      data.dialogue.forEach((line) => {
+        const p = document.createElement("p");
+        p.className = "dialogue-line";
+        p.textContent = `${line.speaker}: ${line.text}`;
+        container.appendChild(p);
+      });
 
-  if (data.combined_audio_url) {
-    const audioWrapper = document.createElement("div");
-    audioWrapper.className = "audio-wrapper";
+      if (data.combined_audio_url) {
+        const audioWrapper = document.createElement("div");
+        audioWrapper.className = "audio-wrapper";
 
-    const audioHeader = document.createElement("h2");
-    audioHeader.textContent = "Full Conversation:";
+        const audioHeader = document.createElement("h2");
+        audioHeader.textContent = "🎧 Full Conversation:";
 
-    const audio = document.createElement("audio");
-    audio.controls = true;
-    audio.src = data.combined_audio_url;
+        const audio = document.createElement("audio");
+        audio.controls = true;
+        audio.src = data.combined_audio_url;
 
-    audioWrapper.appendChild(audioHeader);
-    audioWrapper.appendChild(audio);
-    container.appendChild(audioWrapper);
-  }
+        audioWrapper.appendChild(audioHeader);
+        audioWrapper.appendChild(audio);
+        container.appendChild(audioWrapper);
+      }
 
-  button.disabled = false;
-  button.textContent = "Generate Conversation";
-});
+      button.disabled = false;
+      button.textContent = "Generate Conversation";
+    });
   </script>
 </body>
 </html>
