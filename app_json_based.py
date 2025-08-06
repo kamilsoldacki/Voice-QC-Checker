@@ -101,29 +101,29 @@ def generate_conversation():
     client = OpenAI(api_key=openai_api_key)
 
 if model == "eleven_v3":
-    system_prompt = (
-        "You are generating a 1-minute, natural, but emotionally expressive and varied conversation between two characters, A and B. "
-        "Format it as alternating lines starting with A: or B:. Keep the total conversation natural and realistic, but "
-        "rich in performance and subtle vocal cues. Use the following rules:\n\n"
+        system_prompt = (
+            "You are generating a 1-minute, natural, but emotionally expressive and varied conversation between two characters, A and B. "
+            "Format it as alternating lines starting with A: or B:. Keep the total conversation natural and realistic, but "
+            "rich in performance and subtle vocal cues. Use the following rules:\n\n"
 
-        "1. Each line must start with A: or B:.\n"
-        "2. Before each line, include one or more emotional/audio tags in square brackets that set the tone for that sentence, "
-        "e.g. [SAD][SOFT][SLOW].\n"
-        "3. You may also include relevant audio tags **inside the line** (within brackets) when the emotion or reaction changes "
-        "mid-sentence, e.g. '...I was so [SIGH] disappointed...'.\n"
-        "4. Use tags from the following categories to reflect expressive delivery:\n"
-        "   - Emotional Tone: [HAPPY], [SAD], [ANGRY], [TENDER], [JOYFUL], [WISTFUL], [CONFUSED], [ROMANTIC], etc.\n"
-        "   - Non-verbal Reactions: [SIGH], [LAUGH], [CRY], [GASP], [MUMBLE], etc.\n"
-        "   - Volume & Energy: [WHISPERING], [LOUD], [BREATHY], [CALM], [INTENSE], etc.\n"
-        "   - Rhythm & Timing: [FAST], [SLOW], [PAUSED], [DRAMATIC PAUSE], [TRAILING OFF], etc.\n"
-        "5. Do not overuse tags. Be nuanced. Vary emotions and energy across the conversation.\n"
-        "6. The tone and rhythm should evolve — not all lines should use the same tags or pacing.\n"
-        "7. A speaks using approximately {length_a} sentences, and B responds using approximately {length_b} sentences.\n\n"
+            "1. Each line must start with A: or B:.\n"
+            "2. Before each line, include one or more emotional/audio tags in square brackets that set the tone for that sentence, "
+            "e.g. [SAD][SOFT][SLOW].\n"
+            "3. You may also include relevant audio tags **inside the line** (within brackets) when the emotion or reaction changes "
+            "mid-sentence, e.g. '...I was so [SIGH] disappointed...'.\n"
+            "4. Use tags from the following categories to reflect expressive delivery:\n"
+            "   - Emotional Tone: [HAPPY], [SAD], [ANGRY], [TENDER], [JOYFUL], [WISTFUL], [CONFUSED], [ROMANTIC], etc.\n"
+            "   - Non-verbal Reactions: [SIGH], [LAUGH], [CRY], [GASP], [MUMBLE], etc.\n"
+            "   - Volume & Energy: [WHISPERING], [LOUD], [BREATHY], [CALM], [INTENSE], etc.\n"
+            "   - Rhythm & Timing: [FAST], [SLOW], [PAUSED], [DRAMATIC PAUSE], [TRAILING OFF], etc.\n"
+            "5. Do not overuse tags. Be nuanced. Vary emotions and energy across the conversation.\n"
+            "6. The tone and rhythm should evolve — not all lines should use the same tags or pacing.\n"
+            f"7. A speaks using approximately {length_a} sentences, and B responds using approximately {length_b} sentences.\n\n"
 
-        "Your goal is to simulate a believable, emotionally dynamic dialogue with cinematic audio direction embedded. "
-        "Make sure the interaction feels alive, human, and performative. Show both subtle and overt emotions. "
-        "Incorporate appropriate pauses, reactions, and shifts in tone mid-line when relevant."
-    )
+            "Your goal is to simulate a believable, emotionally dynamic dialogue with cinematic audio direction embedded. "
+            "Make sure the interaction feels alive, human, and performative. Show both subtle and overt emotions. "
+            "Incorporate appropriate pauses, reactions, and shifts in tone mid-line when relevant."
+        )
     else:
         system_prompt = (
             "Generate a short, natural, 1-minute conversation between two people labeled A and B.\n"
