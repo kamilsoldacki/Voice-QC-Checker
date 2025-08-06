@@ -7,7 +7,7 @@ import uuid
 
 app = Flask(__name__)
 
-# Wczytanie tekstów z pliku JSON
+# Wczytanie tekstów z pliku JSON (dla innych endpointów, np. /generate)
 with open("texts.json", "r", encoding="utf-8") as f:
     TEXTS = json.load(f)
 
@@ -76,9 +76,6 @@ def generate_sample(voice_id, text):
     else:
         return ""
 
-
-
-
 @app.route('/api/conversation', methods=['POST'])
 def generate_conversation():
     from openai import OpenAI
@@ -94,6 +91,9 @@ def generate_conversation():
     voice_id_a = data.get("voiceIdA")
     voice_id_b = data.get("voiceIdB")
     topic = data.get("topic")
+    model = data.get("model", "eleven_multilingual_v2")
+    length_a = data.get("lengthA", "short")
+    length_b = data.get("lengthB", "short")
 
     if not all([voice_id_a, voice_id_b, topic]):
         return jsonify({"error": "Missing required fields"}), 400
@@ -105,7 +105,12 @@ def generate_conversation():
         messages=[
             {
                 "role": "system",
-                "content": "Generate a short, natural, 1-minute conversation (6–8 lines) between two people. Label lines as A: and B:. Keep it realistic.",
+                "content": (
+                    "Generate a short, natural, 1-minute conversation between two people labeled A and B.\n"
+                    f"A speaks using {length_a} sentences.\n"
+                    f"B speaks using {length_b} sentences.\n"
+                    "Label each line clearly as A: or B:. Keep it realistic and human-like."
+                ),
             },
             {
                 "role": "user",
@@ -140,7 +145,7 @@ def generate_conversation():
             },
             json={
                 "text": text,
-                "model_id": "eleven_multilingual_v2",
+                "model_id": model,
                 "voice_settings": {
                     "stability": 0.5,
                     "similarity_boost": 0.75,
@@ -166,9 +171,8 @@ def generate_conversation():
             "audio_url": audio_url
         })
 
-        # 🔊 Połącz wszystkie ścieżki audio w jedną
+    # 🔊 Połącz wszystkie ścieżki audio w jedną
     combined = AudioSegment.empty()
-
     for line in dialogue:
         path = line["audio_url"].lstrip("/")  # usuń /
         if os.path.exists(path):
@@ -185,11 +189,6 @@ def generate_conversation():
         "dialogue": dialogue,
         "combined_audio_url": f"/static/{combined_filename}"
     })
-
-
-
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
