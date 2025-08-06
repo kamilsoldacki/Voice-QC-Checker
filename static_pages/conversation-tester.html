@@ -139,8 +139,8 @@
 
         <label for="lengthA">Length of segment for Voice A</label>
         <select id="lengthA">
-          <option value="short">Short</option>
-          <option value="long">Long</option>
+          <option value="short">short</option>
+          <option value="long">long</option>
         </select>
 
         <label for="voiceB">Voice ID B</label>
@@ -148,8 +148,8 @@
 
         <label for="lengthB">Length of segment for Voice B</label>
         <select id="lengthB">
-          <option value="short">Short</option>
-          <option value="long">Long</option>
+          <option value="short">short</option>
+          <option value="long">long</option>
         </select>
 
         <label for="model">Model</label>
@@ -160,7 +160,7 @@
           <option value="eleven_turbo_v2">eleven_turbo_v2</option>
         </select>
 
-        <label for="topic">Topic (e.g. ordering coffee, talking about weather)</label>
+        <label for="topic">Topic (e.g. ordering coffee, talking about weather, NBA, support service)</label>
         <input type="text" id="topic" required />
 
         <button type="submit">Generate</button>
@@ -215,7 +215,7 @@
         audioWrapper.className = "audio-wrapper";
 
         const audioHeader = document.createElement("h2");
-        audioHeader.textContent = "🎧 Full Conversation:";
+        audioHeader.textContent = "Full Conversation:";
 
         const audio = document.createElement("audio");
         audio.controls = true;
@@ -227,7 +227,7 @@
       }
 
       button.disabled = false;
-      button.textContent = "Generate Conversation";
+      button.textContent = "Generate";
     });
   </script>
 </body>
