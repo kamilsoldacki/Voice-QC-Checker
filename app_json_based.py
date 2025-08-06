@@ -101,29 +101,27 @@ def generate_conversation():
     client = OpenAI(api_key=openai_api_key)
 
     if model == "eleven_v3":
-        system_prompt = (
-            "You are generating a 1-minute, natural, but emotionally expressive and varied conversation between two characters, A and B. "
-            "Format it as alternating lines starting with A: or B:. Keep the total conversation natural and realistic, but "
-            "rich in performance and subtle vocal cues. Use the following rules:\n\n"
-
-            "1. Each line must start with A: or B:.\n"
-            "2. Before each line, include one or more emotional/audio tags in square brackets that set the tone for that sentence, "
-            "e.g. [SAD][SOFT][SLOW].\n"
-            "3. You may also include relevant audio tags **inside the line** (within brackets) when the emotion or reaction changes "
-            "mid-sentence, e.g. '...I was so [SIGH] disappointed...'.\n"
-            "4. Use tags from the following categories to reflect expressive delivery:\n"
-            "   - Emotional Tone: [HAPPY], [SAD], [ANGRY], [TENDER], [JOYFUL], [WISTFUL], [CONFUSED], [ROMANTIC], etc.\n"
-            "   - Non-verbal Reactions: [SIGH], [LAUGH], [CRY], [GASP], [MUMBLE], etc.\n"
-            "   - Volume & Energy: [WHISPERING], [LOUD], [BREATHY], [CALM], [INTENSE], etc.\n"
-            "   - Rhythm & Timing: [FAST], [SLOW], [PAUSED], [DRAMATIC PAUSE], [TRAILING OFF], etc.\n"
-            "5. Do not overuse tags. Be nuanced. Vary emotions and energy across the conversation.\n"
-            "6. The tone and rhythm should evolve — not all lines should use the same tags or pacing.\n"
-            f"7. A speaks using approximately {length_a} sentences, and B responds using approximately {length_b} sentences.\n\n"
-
-            "Your goal is to simulate a believable, emotionally dynamic dialogue with cinematic audio direction embedded. "
-            "Make sure the interaction feels alive, human, and performative. Show both subtle and overt emotions. "
-            "Incorporate appropriate pauses, reactions, and shifts in tone mid-line when relevant."
-        )
+    system_prompt = (
+        "Generate a realistic, emotionally expressive 1-minute conversation between two people labeled A and B.\n\n"
+        "Format:\n"
+        "- Each line must begin with A: or B:\n"
+        "- Most lines (but not all) may start with one expressive audio tag in square brackets (e.g. [laughs], [whispers]).\n"
+        "- You may add one more tag within the line if there is a clear emotional or delivery shift.\n"
+        "- Do not repeat or stack tags at the beginning – use at most one per line.\n"
+        "- Only 40-60% of lines should contain tags. Others should be clean and natural.\n\n"
+        "Audio tags guide the vocal performance and emotion.\n"
+        "You may use tags like:\n"
+        "  [laughs], [starts laughing], [wheezing], [sighs], [whispers],\n"
+        "  [sarcastic], [curious], [excited], [crying], [snorts], [mischievously], etc.\n"
+        "These represent **tone, attitude, reactions, volume, or delivery**.\n\n"
+        "You have access to a wide expressive palette — think of tone (joyful, sad, intense), delivery (whispering, shouting), rhythm (slow, fast), and reactions (sighs, laughs).\n"
+        "But be subtle. Use the best tags for context. Avoid forcing or overusing them.\n\n"
+        "Each speaker speaks in turns:\n"
+        "- A speaks using approximately {length_a} sentences per turn\n"
+        "- B responds using approximately {length_b} sentences per turn\n\n"
+        "Your goal is to create a cinematic, human-like, performative conversation where audio direction is embedded but not exaggerated.\n"
+        "The dialogue should feel alive and emotionally nuanced, using audio tags as gentle performance cues — not special effects."
+    )
     else:
         system_prompt = (
             "Generate a short, natural, 1-minute conversation between two people labeled A and B.\n"
