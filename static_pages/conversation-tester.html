@@ -155,8 +155,7 @@
     <header>IIElevenLabs</header>
 
     <div class="card">
-      <h1>Conversational Voice Tester</h1>
-      <p>Test the chemistry between voices in a natural dialogue and hear how they interact.</p>
+      <p>Test the chemistry between voices from the Voice Library in a natural dialogue and hear how they interact.</p>
       <form id="dialogForm">
 
         <!-- Voice A -->
@@ -220,7 +219,7 @@
 
       const button = e.submitter;
       button.disabled = true;
-      button.textContent = "Generating...";
+      button.textContent = "Writing the conversation & generating audio... Just a moment.";
 
       const voiceIdA = document.getElementById("voiceA").value;
       const voiceIdB = document.getElementById("voiceB").value;
