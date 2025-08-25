@@ -197,6 +197,87 @@
           <option value="eleven_turbo_v2">eleven_turbo_v2</option>
         </select>
 
+        <label for="language">Language of the conversation</label>
+<select id="language" required>
+  <option value="AFR">Afrikaans</option>
+  <option value="ARA">Arabic</option>
+  <option value="ASM">Assamese</option>
+  <option value="AZE">Azerbaijani</option>
+  <option value="BEL">Belarusian</option>
+  <option value="BEN">Bengali</option>
+  <option value="BOS">Bosnian</option>
+  <option value="BUL">Bulgarian</option>
+  <option value="CAT">Catalan</option>
+  <option value="CEB">Cebuano</option>
+  <option value="CMN">Mandarin / Chinese</option>
+  <option value="CYM">Welsh</option>
+  <option value="DAN">Danish</option>
+  <option value="DEU">German</option>
+  <option value="ELL">Greek</option>
+  <option value="ENG" selected>English</option>
+  <option value="EST">Estonian</option>
+  <option value="FIL">Filipino</option>
+  <option value="FIN">Finnish</option>
+  <option value="FRA">French</option>
+  <option value="GLG">Galician</option>
+  <option value="GLE">Irish</option>
+  <option value="GUJ">Gujarati</option>
+  <option value="HAU">Hausa</option>
+  <option value="HEB">Hebrew</option>
+  <option value="HIN">Hindi</option>
+  <option value="HRV">Croatian</option>
+  <option value="HUN">Hungarian</option>
+  <option value="HYE">Armenian</option>
+  <option value="IND">Indonesian</option>
+  <option value="ISL">Icelandic</option>
+  <option value="ITA">Italian</option>
+  <option value="JAV">Javanese</option>
+  <option value="JPN">Japanese</option>
+  <option value="KAN">Kannada</option>
+  <option value="KAT">Georgian</option>
+  <option value="KAZ">Kazakh</option>
+  <option value="KIR">Kirghiz</option>
+  <option value="KOR">Korean</option>
+  <option value="LAV">Latvian</option>
+  <option value="LIN">Lingala</option>
+  <option value="LIT">Lithuanian</option>
+  <option value="LTZ">Luxembourgish</option>
+  <option value="MAL">Malayalam</option>
+  <option value="MAR">Marathi</option>
+  <option value="MKD">Macedonian</option>
+  <option value="MSA">Malay</option>
+  <option value="NEP">Nepali</option>
+  <option value="NOR">Norwegian</option>
+  <option value="NLD">Dutch</option>
+  <option value="NYA">Chichewa</option>
+  <option value="PAN">Punjabi</option>
+  <option value="POL">Polish</option>
+  <option value="POR">Portuguese</option>
+  <option value="PUS">Pashto</option>
+  <option value="RON">Romanian</option>
+  <option value="RUS">Russian</option>
+  <option value="SLK">Slovak</option>
+  <option value="SLV">Slovenian</option>
+  <option value="SND">Sindhi</option>
+  <option value="SOM">Somali</option>
+  <option value="SPA">Spanish</option>
+  <option value="SRP">Serbian</option>
+  <option value="SWE">Swedish</option>
+  <option value="SWA">Swahili</option>
+  <option value="TAM">Tamil</option>
+  <option value="TEL">Telugu</option>
+  <option value="THA">Thai</option>
+  <option value="TUR">Turkish</option>
+  <option value="UKR">Ukrainian</option>
+  <option value="URD">Urdu</option>
+  <option value="VIE">Vietnamese</option>
+  <!-- możesz dodać więcej języków -->
+</select>
+<p style="font-size: 0.8rem; color: #666; margin-top: -0.5rem; margin-bottom: 1rem;">
+  <strong>Note:</strong> Model <code>eleven_v3</code> supports 74 languages.<br/>
+  Other models support 32. Full list here: <a href="https://help.elevenlabs.io/hc/en-us/articles/13313366263441-What-languages-do-you-support" target="_blank">See list</a>.
+</p>
+
         <!-- Topic -->
         <label for="topic">Topic (e.g. ordering coffee, talking about weather, support service)</label>
         <input type="text" id="topic" required />
@@ -226,12 +307,13 @@
       const lengthA = document.getElementById("lengthA").value;
       const lengthB = document.getElementById("lengthB").value;
       const model = document.getElementById("model").value;
+      const language = document.getElementById("language").value;
       const topic = document.getElementById("topic").value;
 
       const res = await fetch("/api/conversation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ voiceIdA, voiceIdB, topic, model, lengthA, lengthB })
+        body: JSON.stringify({ voiceIdA, voiceIdB, topic, model, lengthA, lengthB, language }),
       });
 
       const data = await res.json();
