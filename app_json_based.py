@@ -94,6 +94,7 @@ def generate_conversation():
     model = data.get("model", "eleven_multilingual_v2")
     length_a = data.get("lengthA", "short")
     length_b = data.get("lengthB", "short")
+    language = data.get("language", "ENG")  # default ENG
 
     if not all([voice_id_a, voice_id_b, topic]):
         return jsonify({"error": "Missing required fields"}), 400
@@ -102,7 +103,7 @@ def generate_conversation():
 
     if model == "eleven_v3":
         system_prompt = (
-        "Generate a realistic, emotionally expressive 1-minute conversation between two people labeled A and B.\n\n"
+        f"Generate a realistic, emotionally expressive 1-minute conversation between two people labeled A and B, in {language}.\n\n"
         "Format:\n"
         "- Each line must begin with A: or B:\n"
         "- Most lines (but not all) may start with one expressive audio tag in square brackets (e.g. [laughs], [whispers]).\n"
@@ -124,7 +125,7 @@ def generate_conversation():
     )
     else:
         system_prompt = (
-            "Generate a short, natural, 1-minute conversation between two people labeled A and B.\n"
+            f"Generate a short, natural, 1-minute conversation between two people labeled A and B, in {language}.\n"
             f"A speaks using {length_a} sentences.\n"
             f"B speaks using {length_b} sentences.\n"
             "Label each line clearly as A: or B:. Keep it realistic and human-like."
