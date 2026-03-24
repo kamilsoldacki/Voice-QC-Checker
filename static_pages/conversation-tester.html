@@ -102,19 +102,10 @@
       width: 100%;
     }
 
-    .dialogue-block {
-      margin-bottom: 1rem;
-    }
-
     .dialogue-line {
       font-size: 0.95rem;
       color: #333;
-      margin-bottom: 0.35rem;
-    }
-
-    .dialogue-block audio {
-      width: 100%;
-      margin-top: 0.25rem;
+      margin-bottom: 0.5rem;
     }
 
     .audio-wrapper {
@@ -334,11 +325,14 @@
       const container = document.getElementById("result");
       container.innerHTML = "";
 
-      if (!res.ok || data.error) {
+      const serverError =
+        typeof data.error === "string" && data.error ? data.error : "";
+
+      if (!res.ok || serverError) {
         const err = document.createElement("p");
         err.className = "dialogue-line";
         err.style.color = "#b00020";
-        err.textContent = data.error || `Request failed (${res.status})`;
+        err.textContent = serverError || `Request failed (${res.status})`;
         container.appendChild(err);
       } else if (!Array.isArray(data.dialogue)) {
         const err = document.createElement("p");
@@ -351,36 +345,11 @@
         dialogueHeader.textContent = "Script:";
         container.appendChild(dialogueHeader);
 
-        const resolveAudioUrl = (path) =>
-          path ? new URL(path, window.location.origin).href : "";
-
-        const attachMpegSource = (audioEl, urlPath) => {
-          if (!urlPath) return;
-          const abs = resolveAudioUrl(urlPath);
-          const source = document.createElement("source");
-          source.src = abs;
-          source.type = "audio/mpeg";
-          audioEl.appendChild(source);
-        };
-
         data.dialogue.forEach((line) => {
-          const block = document.createElement("div");
-          block.className = "dialogue-block";
-
           const p = document.createElement("p");
           p.className = "dialogue-line";
           p.textContent = `${line.speaker}: ${line.text}`;
-          block.appendChild(p);
-
-          if (line.audio_url) {
-            const lineAudio = document.createElement("audio");
-            lineAudio.controls = true;
-            lineAudio.preload = "metadata";
-            attachMpegSource(lineAudio, line.audio_url);
-            block.appendChild(lineAudio);
-          }
-
-          container.appendChild(block);
+          container.appendChild(p);
         });
 
         if (data.combined_audio_url) {
@@ -393,7 +362,7 @@
           const audio = document.createElement("audio");
           audio.controls = true;
           audio.preload = "metadata";
-          attachMpegSource(audio, data.combined_audio_url);
+          audio.src = data.combined_audio_url;
 
           audioWrapper.appendChild(audioHeader);
           audioWrapper.appendChild(audio);

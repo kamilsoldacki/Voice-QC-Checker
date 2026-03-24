@@ -199,6 +199,7 @@ def generate_conversation():
 
     combined_audio_url = ""
     if len(combined) > 0:
+        os.makedirs("static", exist_ok=True)
         combined_filename = f"{uuid.uuid4()}_combined.mp3"
         combined_filepath = os.path.join("static", combined_filename)
         combined.export(combined_filepath, format="mp3")
