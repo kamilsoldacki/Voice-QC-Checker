@@ -13,6 +13,16 @@ def _static_dir():
     return os.path.join(app.root_path, "static")
 
 
+def _turn_length_phrase(segment_length: str) -> str:
+    """Map segments length (short / medium / long) to instructions for GPT."""
+    key = (segment_length or "medium").strip().lower()
+    if key == "long":
+        return "approximately 3–4 sentences"
+    if key == "short":
+        return "approximately 1 sentence"
+    return "approximately 2 sentences"
+
+
 def _elevenlabs_error_message(response):
     if response is None:
         return "No response"
@@ -180,8 +190,8 @@ def generate_conversation():
     voice_id_b = data.get("voiceIdB")
     topic = data.get("topic")
     model = data.get("model", "eleven_multilingual_v2")
-    length_a = data.get("lengthA", "short")
-    length_b = data.get("lengthB", "short")
+    length_a = data.get("lengthA", "medium")
+    length_b = data.get("lengthB", "medium")
     language = data.get("language", "ENG")  # default ENG
 
     if not all([voice_id_a, voice_id_b, topic]):
@@ -189,34 +199,36 @@ def generate_conversation():
 
     client = OpenAI(api_key=openai_api_key)
 
+    turn_a = _turn_length_phrase(length_a)
+    turn_b = _turn_length_phrase(length_b)
+
     if model == "eleven_v3":
         system_prompt = (
-        f"Generate a realistic, emotionally expressive 1-minute conversation between two people labeled A and B, in {language}.\n\n"
-        "Format:\n"
-        "- Each line must begin with A: or B:\n"
-        "- Most lines (but not all) may start with one expressive audio tag in square brackets (e.g. [laughs], [whispers]).\n"
-        "- You may add one more tag within the line if there is a clear emotional or delivery shift.\n"
-        "- Do not repeat or stack tags at the beginning – use at most one per line.\n"
-        "- Only 40-60% of lines should contain tags. Others should be clean and natural.\n\n"
-        "Audio tags guide the vocal performance and emotion.\n"
-        "You may use tags like:\n"
-        "  [laughs], [starts laughing], [wheezing], [sighs], [whispers],\n"
-        "  [sarcastic], [curious], [excited], [crying], [snorts], [mischievously], etc.\n"
-        "These represent **tone, attitude, reactions, volume, or delivery**.\n\n"
-        "You have access to a wide expressive palette — think of tone (joyful, sad, intense), delivery (whispering, shouting), rhythm (slow, fast), and reactions (sighs, laughs).\n"
-        "But be subtle. Use the best tags for context. Avoid forcing or overusing them.\n\n"
-        "Each speaker speaks in turns:\n"
-        "- A speaks using approximately {length_a} sentences per turn\n"
-        "- B responds using approximately {length_b} sentences per turn\n\n"
-        "Your goal is to create a cinematic, human-like, performative conversation where audio direction is embedded but not exaggerated.\n"
-        "The dialogue should feel alive and emotionally nuanced, using audio tags as gentle performance cues — not special effects."
-    )
+            f"Generate a realistic, emotionally expressive 1-minute conversation between two people labeled A and B, in {language}.\n\n"
+            "Format:\n"
+            "- Each line must begin with A: or B:\n"
+            "- Most lines (but not all) may start with one expressive audio tag in square brackets (e.g. [laughs], [whispers]).\n"
+            "- You may add one more tag within the line if there is a clear emotional or delivery shift.\n"
+            "- Do not repeat or stack tags at the beginning – use at most one per line.\n"
+            "- Only 40-60% of lines should contain tags. Others should be clean and natural.\n\n"
+            "Audio tags guide the vocal performance and emotion.\n"
+            "You may use tags like:\n"
+            "  [laughs], [starts laughing], [wheezing], [sighs], [whispers],\n"
+            "  [sarcastic], [curious], [excited], [crying], [snorts], [mischievously], etc.\n"
+            "These represent **tone, attitude, reactions, volume, or delivery**.\n\n"
+            "You have access to a wide expressive palette — think of tone (joyful, sad, intense), delivery (whispering, shouting), rhythm (slow, fast), and reactions (sighs, laughs).\n"
+            "But be subtle. Use the best tags for context. Avoid forcing or overusing them.\n\n"
+            "Each speaker speaks in turns:\n"
+            f"- A speaks using {turn_a} per turn\n"
+            f"- B speaks using {turn_b} per turn\n\n"
+            "Your goal is to create a cinematic, human-like, performative conversation where audio direction is embedded but not exaggerated.\n"
+            "The dialogue should feel alive and emotionally nuanced, using audio tags as gentle performance cues — not special effects."
+        )
     else:
         system_prompt = (
-            f"Generate a short, natural, 1-minute conversation between two people labeled A and B, in {language}.\n"
-            f"A speaks using {length_a} sentences.\n"
-            f"B speaks using {length_b} sentences.\n"
-            "Label each line clearly as A: or B:. Keep it realistic and human-like."
+            f"Generate a natural, 1-minute conversation between two people labeled A and B, in {language}.\n"
+            f"Each line must start with A: or B:. A's turns should use {turn_a}; B's turns should use {turn_b}. "
+            "Vary rhythm slightly so it does not feel rushed. Keep it realistic and human-like."
         )
 
     response = client.chat.completions.create(
