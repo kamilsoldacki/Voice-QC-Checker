@@ -368,12 +368,35 @@
           audioWrapper.appendChild(audio);
           container.appendChild(audioWrapper);
         } else {
-          const noAudio = document.createElement("p");
+          const noAudio = document.createElement("div");
           noAudio.className = "dialogue-line";
           noAudio.style.color = "#666";
           noAudio.style.fontSize = "0.9rem";
-          noAudio.textContent =
-            "No audio mix was produced. Check ELEVEN_API_KEY, voice IDs, and that speech requests succeed for the selected model.";
+          const intro = document.createElement("p");
+          intro.style.marginBottom = "0.5rem";
+          intro.textContent =
+            "No audio mix was produced. Fix the issues below or check ELEVEN_API_KEY and voice IDs.";
+          noAudio.appendChild(intro);
+          if (Array.isArray(data.speech_errors) && data.speech_errors.length > 0) {
+            data.speech_errors.forEach((err) => {
+              const row = document.createElement("p");
+              row.style.fontFamily = 'ui-monospace, monospace';
+              row.style.fontSize = "0.8rem";
+              row.style.color = "#333";
+              row.style.marginBottom = "0.35rem";
+              row.textContent = `[HTTP ${err.status}] ${err.message}`;
+              if (err.speaker && err.text_preview) {
+                row.textContent += ` — (${err.speaker}) ${err.text_preview}`;
+              }
+              noAudio.appendChild(row);
+            });
+          } else {
+            const hint = document.createElement("p");
+            hint.style.fontSize = "0.85rem";
+            hint.textContent =
+              "No ElevenLabs error details were returned (e.g. mix failed after downloads or ffmpeg/pydub could not read files). Check server logs.";
+            noAudio.appendChild(hint);
+          }
           container.appendChild(noAudio);
         }
       }

@@ -13,6 +13,60 @@ def _static_dir():
     return os.path.join(app.root_path, "static")
 
 
+def _elevenlabs_error_message(response):
+    if response is None:
+        return "No response"
+    try:
+        payload = response.json()
+    except ValueError:
+        text = (response.text or "").strip()
+        return text[:800] if text else f"HTTP {response.status_code}"
+    detail = payload.get("detail")
+    if isinstance(detail, str):
+        return detail
+    if isinstance(detail, list):
+        parts = []
+        for item in detail:
+            if isinstance(item, dict):
+                parts.append(str(item.get("msg", item)))
+            else:
+                parts.append(str(item))
+        return "; ".join(parts) if parts else str(payload)[:800]
+    if isinstance(payload, dict) and payload:
+        return str(payload)[:800]
+    return f"HTTP {response.status_code}"
+
+
+def _elevenlabs_tts(voice_id, api_key, text, model):
+    """Call TTS; on 400 retry with text+model only (some models reject voice_settings)."""
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+    params = {"output_format": "mp3_44100_128"}
+    headers = {
+        "xi-api-key": api_key,
+        "Content-Type": "application/json",
+    }
+    full_body = {
+        "text": text,
+        "model_id": model,
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.75,
+            "style": 0.0,
+            "use_speaker_boost": True,
+        },
+    }
+    min_body = {"text": text, "model_id": model}
+    r = requests.post(url, headers=headers, params=params, json=full_body, timeout=120)
+    if r.status_code == 200:
+        return r, None
+    if r.status_code == 400:
+        r2 = requests.post(url, headers=headers, params=params, json=min_body, timeout=120)
+        if r2.status_code == 200:
+            return r2, None
+        return r2, _elevenlabs_error_message(r2)
+    return r, _elevenlabs_error_message(r)
+
+
 # Wczytanie tekstów z pliku JSON
 with open("texts.json", "r", encoding="utf-8") as f:
     TEXTS = json.load(f)
@@ -87,7 +141,6 @@ def generate_sample(voice_id, text):
 @app.route('/api/conversation', methods=['POST'])
 def generate_conversation():
     from openai import OpenAI
-    import base64
 
     openai_api_key = os.environ.get("OPEN_API_KEY")
     eleven_api_key = os.environ.get("ELEVEN_API_KEY")
@@ -149,38 +202,32 @@ def generate_conversation():
 
     lines = response.choices[0].message.content.strip().split("\n")
     dialogue = []
+    speech_errors = []
 
     for line in lines:
         if not line.strip():
             continue
-        if line.startswith("A:"):
+        normalized = line.strip().replace("\uff1a", ":")
+        if normalized.startswith("A:"):
             speaker = "A"
             voice_id = voice_id_a
-            text = line[2:].strip()
-        elif line.startswith("B:"):
+            text = normalized[2:].strip()
+        elif normalized.startswith("B:"):
             speaker = "B"
             voice_id = voice_id_b
-            text = line[2:].strip()
+            text = normalized[2:].strip()
         else:
             continue
 
-        tts_response = requests.post(
-            f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
-            headers={
-                "xi-api-key": eleven_api_key,
-                "Content-Type": "application/json"
-            },
-            json={
+        if not text:
+            dialogue.append({
+                "speaker": speaker,
                 "text": text,
-                "model_id": model,
-                "voice_settings": {
-                    "stability": 0.5,
-                    "similarity_boost": 0.75,
-                    "style": 0.0,
-                    "use_speaker_boost": True
-                }
-            }
-        )
+                "audio_url": ""
+            })
+            continue
+
+        tts_response, tts_err = _elevenlabs_tts(voice_id, eleven_api_key, text, model)
 
         if tts_response.status_code == 200:
             d = _static_dir()
@@ -192,6 +239,12 @@ def generate_conversation():
             audio_url = f"/static/{filename}"
         else:
             audio_url = ""
+            speech_errors.append({
+                "speaker": speaker,
+                "status": tts_response.status_code,
+                "message": tts_err or _elevenlabs_error_message(tts_response),
+                "text_preview": text[:160]
+            })
 
         dialogue.append({
             "speaker": speaker,
@@ -223,7 +276,8 @@ def generate_conversation():
 
     return jsonify({
         "dialogue": dialogue,
-        "combined_audio_url": combined_audio_url
+        "combined_audio_url": combined_audio_url,
+        "speech_errors": speech_errors,
     })
 
 if __name__ == '__main__':
