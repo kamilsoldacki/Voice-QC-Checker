@@ -367,6 +367,14 @@
           audioWrapper.appendChild(audioHeader);
           audioWrapper.appendChild(audio);
           container.appendChild(audioWrapper);
+        } else {
+          const noAudio = document.createElement("p");
+          noAudio.className = "dialogue-line";
+          noAudio.style.color = "#666";
+          noAudio.style.fontSize = "0.9rem";
+          noAudio.textContent =
+            "No audio mix was produced. Check ELEVEN_API_KEY, voice IDs, and that speech requests succeed for the selected model.";
+          container.appendChild(noAudio);
         }
       }
 

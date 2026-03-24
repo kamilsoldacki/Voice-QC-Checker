@@ -7,6 +7,12 @@ import uuid
 
 app = Flask(__name__)
 
+
+def _static_dir():
+    """Same directory Flask uses for /static/ URLs (not os.getcwd())."""
+    return os.path.join(app.root_path, "static")
+
+
 # Wczytanie tekstów z pliku JSON
 with open("texts.json", "r", encoding="utf-8") as f:
     TEXTS = json.load(f)
@@ -68,11 +74,13 @@ def generate_sample(voice_id, text):
         }
     )
     if response.status_code == 200:
-        output_path = f"static/{uuid.uuid4()}.mp3"
-        os.makedirs("static", exist_ok=True)
+        d = _static_dir()
+        os.makedirs(d, exist_ok=True)
+        filename = f"{uuid.uuid4()}.mp3"
+        output_path = os.path.join(d, filename)
         with open(output_path, "wb") as f:
             f.write(response.content)
-        return "/" + output_path
+        return f"/static/{filename}"
     else:
         return ""
 
@@ -175,9 +183,10 @@ def generate_conversation():
         )
 
         if tts_response.status_code == 200:
+            d = _static_dir()
+            os.makedirs(d, exist_ok=True)
             filename = f"{uuid.uuid4()}.mp3"
-            filepath = os.path.join("static", filename)
-            os.makedirs("static", exist_ok=True)
+            filepath = os.path.join(d, filename)
             with open(filepath, "wb") as f:
                 f.write(tts_response.content)
             audio_url = f"/static/{filename}"
@@ -191,17 +200,24 @@ def generate_conversation():
         })
 
     combined = AudioSegment.empty()
+    static_base = _static_dir()
     for line in dialogue:
-        path = line["audio_url"].lstrip("/")
-        if path and os.path.exists(path):
+        url = line.get("audio_url") or ""
+        if not url:
+            continue
+        fname = os.path.basename(url.split("?", 1)[0])
+        if not fname or fname in (".", ".."):
+            continue
+        path = os.path.join(static_base, fname)
+        if os.path.exists(path):
             segment = AudioSegment.from_mp3(path)
             combined += segment
 
     combined_audio_url = ""
     if len(combined) > 0:
-        os.makedirs("static", exist_ok=True)
+        os.makedirs(static_base, exist_ok=True)
         combined_filename = f"{uuid.uuid4()}_combined.mp3"
-        combined_filepath = os.path.join("static", combined_filename)
+        combined_filepath = os.path.join(static_base, combined_filename)
         combined.export(combined_filepath, format="mp3")
         combined_audio_url = f"/static/{combined_filename}"
 
