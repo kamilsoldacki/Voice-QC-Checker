@@ -42,7 +42,11 @@ DIALOGUE_LINE_OVERLAP_MS = 320
 
 
 def _merge_dialogue_segments(segments, overlap_ms=DIALOGUE_LINE_OVERLAP_MS):
-    """Join clips with temporal overlap so replies feel quicker / more alive."""
+    """Join clips so each line starts during the crossfade tail of the previous one.
+
+    Uses append(crossfade=…) — unlike overlay(), it extends total duration correctly
+    (overlay truncates anything past the end of the first segment).
+    """
     if not segments:
         return AudioSegment.empty()
     merged = segments[0]
@@ -50,15 +54,11 @@ def _merge_dialogue_segments(segments, overlap_ms=DIALOGUE_LINE_OVERLAP_MS):
         if len(merged) < 100 or len(seg) < 100:
             merged = merged + seg
             continue
-        overlap = min(overlap_ms, len(merged) // 3, len(seg) // 3)
-        if overlap < 60:
+        crossfade = min(overlap_ms, len(merged) // 3, len(seg) // 3)
+        if crossfade < 60:
             merged = merged + seg
             continue
-        position = len(merged) - overlap
-        try:
-            merged = merged.overlay(seg, position=position, gain_during_overlay=-5)
-        except TypeError:
-            merged = merged.overlay(seg, position=position)
+        merged = merged.append(seg, crossfade=crossfade)
     return merged
 
 
