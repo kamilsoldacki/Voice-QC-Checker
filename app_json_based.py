@@ -193,17 +193,20 @@ def generate_conversation():
     combined = AudioSegment.empty()
     for line in dialogue:
         path = line["audio_url"].lstrip("/")
-        if os.path.exists(path):
+        if path and os.path.exists(path):
             segment = AudioSegment.from_mp3(path)
             combined += segment
 
-    combined_filename = f"{uuid.uuid4()}_combined.mp3"
-    combined_filepath = os.path.join("static", combined_filename)
-    combined.export(combined_filepath, format="mp3")
+    combined_audio_url = ""
+    if len(combined) > 0:
+        combined_filename = f"{uuid.uuid4()}_combined.mp3"
+        combined_filepath = os.path.join("static", combined_filename)
+        combined.export(combined_filepath, format="mp3")
+        combined_audio_url = f"/static/{combined_filename}"
 
     return jsonify({
         "dialogue": dialogue,
-        "combined_audio_url": f"/static/{combined_filename}"
+        "combined_audio_url": combined_audio_url
     })
 
 if __name__ == '__main__':

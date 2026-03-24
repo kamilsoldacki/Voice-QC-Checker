@@ -102,10 +102,19 @@
       width: 100%;
     }
 
+    .dialogue-block {
+      margin-bottom: 1rem;
+    }
+
     .dialogue-line {
       font-size: 0.95rem;
       color: #333;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .dialogue-block audio {
+      width: 100%;
+      margin-top: 0.25rem;
     }
 
     .audio-wrapper {
@@ -316,35 +325,80 @@
         body: JSON.stringify({ voiceIdA, voiceIdB, topic, model, lengthA, lengthB, language }),
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = { error: "Invalid server response" };
+      }
       const container = document.getElementById("result");
       container.innerHTML = "";
 
-      const dialogueHeader = document.createElement("h2");
-      dialogueHeader.textContent = "Script:";
-      container.appendChild(dialogueHeader);
+      if (!res.ok || data.error) {
+        const err = document.createElement("p");
+        err.className = "dialogue-line";
+        err.style.color = "#b00020";
+        err.textContent = data.error || `Request failed (${res.status})`;
+        container.appendChild(err);
+      } else if (!Array.isArray(data.dialogue)) {
+        const err = document.createElement("p");
+        err.className = "dialogue-line";
+        err.style.color = "#b00020";
+        err.textContent = "Unexpected response: no dialogue";
+        container.appendChild(err);
+      } else {
+        const dialogueHeader = document.createElement("h2");
+        dialogueHeader.textContent = "Script:";
+        container.appendChild(dialogueHeader);
 
-      data.dialogue.forEach((line) => {
-        const p = document.createElement("p");
-        p.className = "dialogue-line";
-        p.textContent = `${line.speaker}: ${line.text}`;
-        container.appendChild(p);
-      });
+        const resolveAudioUrl = (path) =>
+          path ? new URL(path, window.location.origin).href : "";
 
-      if (data.combined_audio_url) {
-        const audioWrapper = document.createElement("div");
-        audioWrapper.className = "audio-wrapper";
+        const attachMpegSource = (audioEl, urlPath) => {
+          if (!urlPath) return;
+          const abs = resolveAudioUrl(urlPath);
+          const source = document.createElement("source");
+          source.src = abs;
+          source.type = "audio/mpeg";
+          audioEl.appendChild(source);
+        };
 
-        const audioHeader = document.createElement("h2");
-        audioHeader.textContent = "Take a listen:";
+        data.dialogue.forEach((line) => {
+          const block = document.createElement("div");
+          block.className = "dialogue-block";
 
-        const audio = document.createElement("audio");
-        audio.controls = true;
-        audio.src = data.combined_audio_url;
+          const p = document.createElement("p");
+          p.className = "dialogue-line";
+          p.textContent = `${line.speaker}: ${line.text}`;
+          block.appendChild(p);
 
-        audioWrapper.appendChild(audioHeader);
-        audioWrapper.appendChild(audio);
-        container.appendChild(audioWrapper);
+          if (line.audio_url) {
+            const lineAudio = document.createElement("audio");
+            lineAudio.controls = true;
+            lineAudio.preload = "metadata";
+            attachMpegSource(lineAudio, line.audio_url);
+            block.appendChild(lineAudio);
+          }
+
+          container.appendChild(block);
+        });
+
+        if (data.combined_audio_url) {
+          const audioWrapper = document.createElement("div");
+          audioWrapper.className = "audio-wrapper";
+
+          const audioHeader = document.createElement("h2");
+          audioHeader.textContent = "Take a listen:";
+
+          const audio = document.createElement("audio");
+          audio.controls = true;
+          audio.preload = "metadata";
+          attachMpegSource(audio, data.combined_audio_url);
+
+          audioWrapper.appendChild(audioHeader);
+          audioWrapper.appendChild(audio);
+          container.appendChild(audioWrapper);
+        }
       }
 
       button.disabled = false;
