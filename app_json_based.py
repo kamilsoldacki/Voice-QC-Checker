@@ -37,6 +37,31 @@ def _elevenlabs_error_message(response):
     return f"HTTP {response.status_code}"
 
 
+# How much consecutive lines overlap (ms). Next line starts before the previous ends.
+DIALOGUE_LINE_OVERLAP_MS = 320
+
+
+def _merge_dialogue_segments(segments, overlap_ms=DIALOGUE_LINE_OVERLAP_MS):
+    """Join clips with temporal overlap so replies feel quicker / more alive."""
+    if not segments:
+        return AudioSegment.empty()
+    merged = segments[0]
+    for seg in segments[1:]:
+        if len(merged) < 100 or len(seg) < 100:
+            merged = merged + seg
+            continue
+        overlap = min(overlap_ms, len(merged) // 3, len(seg) // 3)
+        if overlap < 60:
+            merged = merged + seg
+            continue
+        position = len(merged) - overlap
+        try:
+            merged = merged.overlay(seg, position=position, gain_during_overlay=-5)
+        except TypeError:
+            merged = merged.overlay(seg, position=position)
+    return merged
+
+
 def _elevenlabs_tts(voice_id, api_key, text, model):
     """Call TTS; on 400 retry with text+model only (some models reject voice_settings)."""
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
@@ -252,7 +277,7 @@ def generate_conversation():
             "audio_url": audio_url
         })
 
-    combined = AudioSegment.empty()
+    segments = []
     static_base = _static_dir()
     for line in dialogue:
         url = line.get("audio_url") or ""
@@ -263,8 +288,9 @@ def generate_conversation():
             continue
         path = os.path.join(static_base, fname)
         if os.path.exists(path):
-            segment = AudioSegment.from_mp3(path)
-            combined += segment
+            segments.append(AudioSegment.from_mp3(path))
+
+    combined = _merge_dialogue_segments(segments)
 
     combined_audio_url = ""
     if len(combined) > 0:
