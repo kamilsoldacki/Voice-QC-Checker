@@ -37,28 +37,30 @@ def _elevenlabs_error_message(response):
     return f"HTTP {response.status_code}"
 
 
-# How much consecutive lines overlap (ms). Next line starts before the previous ends.
-DIALOGUE_LINE_OVERLAP_MS = 320
+# Next line starts this many ms before the previous ends (no crossfade — hard overlap).
+DIALOGUE_LINE_OVERLAP_MS = 110
 
 
 def _merge_dialogue_segments(segments, overlap_ms=DIALOGUE_LINE_OVERLAP_MS):
-    """Join clips so each line starts during the crossfade tail of the previous one.
-
-    Uses append(crossfade=…) — unlike overlay(), it extends total duration correctly
-    (overlay truncates anything past the end of the first segment).
+    """Stack clips with a short tail overlap. No crossfade — both voices run together
+    in the overlap window. Raw `overlay()` would truncate; we pad with silence first.
     """
     if not segments:
         return AudioSegment.empty()
     merged = segments[0]
     for seg in segments[1:]:
-        if len(merged) < 100 or len(seg) < 100:
+        if len(merged) < 80 or len(seg) < 80:
             merged = merged + seg
             continue
-        crossfade = min(overlap_ms, len(merged) // 3, len(seg) // 3)
-        if crossfade < 60:
+        overlap = min(overlap_ms, len(merged) // 4, len(seg) // 4)
+        if overlap < 50:
             merged = merged + seg
             continue
-        merged = merged.append(seg, crossfade=crossfade)
+        position = len(merged) - overlap
+        need = position + len(seg)
+        if len(merged) < need:
+            merged = merged + AudioSegment.silent(duration=need - len(merged))
+        merged = merged.overlay(seg, position=position)
     return merged
 
 
